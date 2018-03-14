@@ -1,6 +1,6 @@
 import argparse
 
-from preprocessing.dataset import Dataset
+from preprocessing.dataset import TrainDataset, TestDataset
 
 
 def create_argparse():
@@ -27,12 +27,12 @@ def main():
     test_file = user_args['test_file']
 
     print('Creating train dataset ...')
-    train_dataset = Dataset(train_file)
+    train_dataset = TrainDataset(train_file)
     train_data = train_dataset.create_dataset()
     train_targets = train_dataset.targets
 
     print('Creating test dataset ...')
-    test_data = Dataset(test_file, train=False).create_dataset()
+    test_data = TestDataset(test_file, train=False).create_dataset()
 
 
 if __name__ == '__main__':
