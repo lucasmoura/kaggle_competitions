@@ -1,153 +1,107 @@
+import math
+import tempfile
+
 import tensorflow as tf
+
+from sklearn.metrics import mean_squared_error
+
+from model.input_pipeline import train_input_fn, test_input_fn
 
 
 class LinearRegressionEstimator:
 
+    def __init__(self, train_data, train_targets, validation_data,
+                 validation_targets, numeric_columns, test_data,
+                 bucket_columns, categorical_columns, num_epochs, batch_size):
+        self.train_data = train_data
+        self.train_targets = train_targets
+
+        self.validation_data = validation_data
+        self.validation_targets = validation_targets
+
+        self.test_data = test_data
+
+        self.numeric_columns = numeric_columns
+        self.bucket_columns = bucket_columns
+        self.categorical_columns = categorical_columns
+
+        self.num_epochs = num_epochs
+        self.batch_size = batch_size
+
     def get_numeric_columns(self):
-        lot_area = tf.feature_column.numeric_column(
-            key='LotArea'
-        )
+        columns = []
+        for num_column in self.numeric_columns:
+            columns.append(
+                tf.feature_column.numeric_column(
+                    key=num_column
+                )
+            )
 
-        lot_frontage = tf.feature_column.numeric_column(
-            key='LotArea'
-        )
-
-        mas_vnr_area = tf.feature_column.numeric_column(
-            key='ManVnrArea'
-        )
-
-        bsmt_fin_sf1 = tf.feature_column.numeric_column(
-            key='BsmtFinSF1'
-        )
-
-        bsmt_fin_sf2 = tf.feature_column.numeric_column(
-            key='BsmtFinSF2'
-        )
-
-        bsmt_unf_sf = tf.feature_column.numeric_column(
-            key='BsmtUnfSF'
-        )
-
-        total_bsmt_sf = tf.feature_column.numeric_column(
-            key='TotalBsmtSF'
-        )
-
-        1st_flr_sf = tf.feature_column.numeric_column(
-            key='1stFlrSF'
-        )
-
-        2nd_flr_sf = tf.feature_column.numeric_column(
-            key='2ndFlrSF'
-        )
-
-        garage_area = tf.feature_column.numeric_column(
-            key='GarageArea'
-        )
-
-        wood_deck_sf = tf.feature_column.numeric_column(
-            key='WoodDeckSF'
-        )
+        return columns
 
     def get_bucketized_columns(self):
-        year_build = tf.feature_column.numeric_column(
-            key='YearBuilt'
-        )
-        year_built_bucket = tf.feature_column.bucketized_column(
-            year_build,
-            boundaries=[1900, 1950, 2000]
-        )
+        bucket_columns = []
+        for key, value in self.bucket_columns.items():
+            numeric = tf.feature_column.numeric_column(
+                key=key
+            )
 
-        year_remod_add = tf.feature_column.numeric_column(
-            key='YearRemodAdd'
-        )
-        year_built_bucket = tf.feature_column.bucketized_column(
-            year_remod_add,
-            boundaries=[1980, 2000]
-        )
+            bucket = tf.feature_column.bucketized_column(
+                numeric,
+                boundaries=value
+            )
 
-        gr_liv_area = tf.feature_column.numeric_column(
-            key='GrLivArea'
-        )
-        gr_liv_are_bucket = tf.feature_column.bucketized_column(
-            gr_liv_area,
-            boundaries=[2200]
-        )
+            bucket_columns.append(bucket)
 
-        kitchen_abv_gt = tf.feature_column.numeric_column(
-            key='KitchenAbvGr'
-        )
-        kitchen_abv_gt_bucket = tf.feature_column.bucketized_column(
-            kitchen_abv_gt,
-            boundaries=[1]
-        )
+        return bucket_columns
 
-        garage_yr_blt = tf.feature_column.numeric_column(
-            key='GarageYrBlt'
-        )
-        garage_yr_blt_bucket = tf.feature_column.bucketized_column(
-            garage_yr_blt,
-            boundaries=[1900, 1960, 1980, 2000]
-        )
+    def get_categorical_columns(self):
+        categorical_columns = []
+
+        for key, value in self.categorical_columns.items():
+            column = tf.feature_column.categorical_column_with_identity(
+                key=key,
+                num_buckets=value
+            )
+
+            categorical_columns.append(column)
+
+        return categorical_columns
 
     def get_feature_columns(self):
-        ms_sub_class = tf.feature_column.categorical_column_with_identity(
-            key='MSSubClass',
-            num_buckets=17
-        )
+        categorical_columns = self.get_categorical_columns()
+        bucket_columns = self.get_bucketized_columns()
+        numeric_columns = self.get_numeric_columns()
 
-        overral_qual = tf.feature_column.categorical_column_with_identity(
-            key='OverallQual',
-            num_buckets=11
-        )
+        return categorical_columns + bucket_columns + numeric_columns
 
-        overral_cond = tf.feature_column.categorical_column_with_identity(
-            key='OverallCond',
-            num_buckets=11
-        )
-
-        bsmt_full_bath = tf.feature_column.categorical_column_with_identity(
-            key='BsmtFullBath',
-            num_buckets=4
-        )
-
-        bsmt_half_bath = tf.feature_column.categorical_column_with_identity(
-            key='BsmtHalfBath',
-            num_buckets=3
-        )
-
-        full_bath = tf.feature_column.categorical_column_with_identity(
-            key='FullBath',
-            num_buckets=4
-        )
-
-        half_bath = tf.feature_column.categorical_column_with_identity(
-            key='HalfBath',
-            num_buckets=3
-        )
-
-        bedroom_abv_gr = tf.feature_column.categorical_column_with_identity(
-            key='BedroomAbvGr',
-            num_buckets=9
-        )
-
-        tot_rms_abv_grd = tf.feature_column.categorical_column_with_identity(
-            key='TotRmsAbvGrd',
-            num_buckets=15
-        )
-
-        fireplaces = tf.feature_column.categorical_column_with_identity(
-            key='Fireplaces',
-            num_buckets=4
-        )
-
-        garage_cars = tf.feature_column.categorical_column_with_identity(
-            key='GarageCars',
-            num_buckets=5
-        )
-
-    def run_estimator(self):
+    def run(self):
         columns = self.get_feature_columns()
 
         model_dir = tempfile.mkdtemp()
-        self.estimator = tf.estimator.LinearClassifier(
-            model_dir=model_dir, feature_columns=columns)
+        self.estimator = tf.estimator.LinearRegressor(
+            model_dir=model_dir, feature_columns=columns
+        )
+
+        self.estimator.train(
+             input_fn=train_input_fn(
+                 data_dataframe=self.train_data,
+                 target_dataframe=self.train_targets,
+                 batch_size=self.batch_size,
+                 num_epochs=self.num_epochs,
+                 should_shuffle=True
+             )
+         )
+
+        predictions = self.estimator.predict(
+             input_fn=test_input_fn(
+                 data_dataframe=self.validation_data,
+             )
+         )
+
+        pred = [x['predictions'].item(0) for x in predictions]
+        val_values = self.validation_targets.values
+
+        rmse = mean_squared_error(pred, val_values)
+        print(rmse)
+
