@@ -1,3 +1,5 @@
+from sklearn.preprocessing import StandardScaler
+
 import pandas as pd
 import numpy as np
 
@@ -26,10 +28,35 @@ class Dataset:
         self.dataset['enc_condition'] = self.dataset.SaleCondition.apply(
             lambda x: 1 if x == 'Partial' else 0)
 
+    def apply_feature_scaling(self, column_name):
+        column_values = self.dataset[column_name]
+        column_mean = self.dataset[column_name].mean()
+        column_std = self.dataset[column_name].std()
+
+        self.dataset[column_name] =  (column_values - column_mean) / column_std
+
+    def update_ms_sub_class(self):
+        values = [20, 30, 40, 45, 50, 60, 70, 75,
+                  80, 85, 90, 120, 150, 160, 180, 190]
+        value_dict = dict(zip(values, range(len(values))))
+        self.dataset['MSSubClass'] = self.dataset.MSSubClass.apply(
+            lambda x: value_dict[x])
+
     def create_dataset(self):
         self.load_dataset()
         self.encode_street()
         self.encode_sales_condition()
+        self.update_ms_sub_class()
+
+        self.apply_feature_scaling('LotFrontage')
+        self.apply_feature_scaling('LotArea')
+        self.apply_feature_scaling('MasVnrArea')
+        self.apply_feature_scaling('BsmtFinSF1')
+        self.apply_feature_scaling('BsmtFinSF2')
+        self.apply_feature_scaling('1stFlrSF')
+        self.apply_feature_scaling('2ndFlrSF')
+        self.apply_feature_scaling('GarageArea')
+        self.apply_feature_scaling('WoodDeckSF')
 
 
 class TrainDataset(Dataset):
