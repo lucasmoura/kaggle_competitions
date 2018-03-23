@@ -1,5 +1,3 @@
-from sklearn.preprocessing import StandardScaler
-
 import pandas as pd
 import numpy as np
 
@@ -33,7 +31,7 @@ class Dataset:
         column_mean = self.dataset[column_name].mean()
         column_std = self.dataset[column_name].std()
 
-        self.dataset[column_name] =  (column_values - column_mean) / column_std
+        self.dataset[column_name] = (column_values - column_mean) / column_std
 
     def update_ms_sub_class(self):
         values = [20, 30, 40, 45, 50, 60, 70, 75,
@@ -48,15 +46,18 @@ class Dataset:
         self.encode_sales_condition()
         self.update_ms_sub_class()
 
-        self.apply_feature_scaling('LotFrontage')
-        self.apply_feature_scaling('LotArea')
-        self.apply_feature_scaling('MasVnrArea')
-        self.apply_feature_scaling('BsmtFinSF1')
-        self.apply_feature_scaling('BsmtFinSF2')
-        self.apply_feature_scaling('1stFlrSF')
-        self.apply_feature_scaling('2ndFlrSF')
-        self.apply_feature_scaling('GarageArea')
-        self.apply_feature_scaling('WoodDeckSF')
+        #self.apply_feature_scaling('LotFrontage')
+        #self.apply_feature_scaling('LotArea')
+        #self.apply_feature_scaling('MasVnrArea')
+        #self.apply_feature_scaling('BsmtFinSF1')
+        #self.apply_feature_scaling('BsmtFinSF2')
+        #self.apply_feature_scaling('1stFlrSF')
+        #self.apply_feature_scaling('2ndFlrSF')
+        #self.apply_feature_scaling('GarageArea')
+        #self.apply_feature_scaling('WoodDeckSF')
+        #self.apply_feature_scaling('OpenPorchSF')
+        #self.apply_feature_scaling('EnclosedPorch')
+        #self.apply_feature_scaling('ScreenPorch')
 
 
 class TrainDataset(Dataset):
@@ -91,8 +92,12 @@ class TrainDataset(Dataset):
 class TestDataset(Dataset):
 
     def select_features(self):
+        ids = self.dataset['Id']
+
         self.dataset = self.dataset.select_dtypes(
             include=[np.number]).drop(['Id'], axis=1).interpolate()
+
+        self.dataset['Id'] = ids
 
     def create_dataset(self):
         super().create_dataset()
