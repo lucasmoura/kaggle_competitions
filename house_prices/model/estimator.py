@@ -95,13 +95,22 @@ class LinearRegressionEstimator:
 
         predictions = self.estimator.predict(
              input_fn=test_input_fn(
-                 data_dataframe=self.validation_data,
+                 data_dataframe=self.validation_data
              )
          )
 
         pred = [x['predictions'].item(0) for x in predictions]
         val_values = self.validation_targets.values
 
-        rmse = mean_squared_error(pred, val_values)
-        print(rmse)
+        rmse = math.sqrt(mean_squared_error(pred, val_values))
+        print('Validation metric: {}'.format(rmse))
+
+        predictions = self.estimator.predict(
+            input_fn=test_input_fn(
+                data_dataframe=self.test_data
+            )
+        )
+
+        pred = [x['predictions'].item(0) for x in predictions]
+        return pred
 
