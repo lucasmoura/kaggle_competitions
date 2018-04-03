@@ -108,8 +108,8 @@ class LinearRegressionEstimator:
             model_dir=model_dir, feature_columns=columns,
             optimizer=tf.train.FtrlOptimizer(
                     learning_rate=0.1,
-                    l1_regularization_strength=1.0,
-                    l2_regularization_strength=1.0)
+                    l1_regularization_strength=0.0,
+                    l2_regularization_strength=3.0)
         )
 
         return estimator
