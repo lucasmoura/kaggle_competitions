@@ -5,7 +5,7 @@ import pandas as pd
 
 from sklearn.model_selection import train_test_split
 
-from preprocessing.dataset import TrainDataset, TestDataset
+from preprocessing.dataset import Dataset
 from model.estimator import LinearRegressionEstimator
 
 
@@ -32,6 +32,11 @@ def create_argparse():
                         type=int,
                         help='Size of batch')
 
+    parser.add_argument('-uv',
+                        '--use-validation',
+                        type=int,
+                        help='If validation data should be used')
+
     return parser
 
 
@@ -41,24 +46,24 @@ def main():
 
     train_file = user_args['train_file']
     test_file = user_args['test_file']
+    use_validation = True if user_args['use_validation'] == 1 else False
 
-    print('Creating train dataset ...')
-    train_dataset = TrainDataset(train_file)
-    train_data = train_dataset.create_dataset()
-    train_targets = train_dataset.targets
+    print('Creating datasets ...')
+    dataset = Dataset(train_file, test_file)
+    train_data, test_data, train_targets, test_id = dataset.create_dataset()
 
-    print('Creating test dataset ...')
-    test_data = TestDataset(test_file, train=False).create_dataset()
-
-    print('Creating validation dataset ...')
-    (train_data, validation_data,
-     train_targets, validation_targets) = train_test_split(
-        train_data, train_targets, random_state=42, test_size=.2)
+    if use_validation:
+        print('Creating validation dataset ...')
+        (train_data, validation_data,
+         train_targets, validation_targets) = train_test_split(
+            train_data, train_targets, random_state=42, test_size=.2)
+    else:
+        validation_data, validation_targets = None, None
 
     print('Creating model ...')
-
-    numeric_columns = train_data.columns
-    bucket_columns, categorical_columns = {}, {}
+    categorical_columns = dataset.categorical_cols
+    numeric_columns = dataset.numeric_cols
+    bucket_columns = dataset.bucket_cols
 
     num_epochs = user_args['num_epochs']
     batch_size = user_args['batch_size']
@@ -66,6 +71,7 @@ def main():
     linear_model = LinearRegressionEstimator(
         train_data=train_data,
         train_targets=train_targets,
+        use_validation=use_validation,
         validation_data=validation_data,
         validation_targets=validation_targets,
         test_data=test_data,
@@ -79,10 +85,10 @@ def main():
     final_predictions = np.exp(pred)
 
     submission = pd.DataFrame()
-    submission['Id'] = test_data.Id
+    submission['Id'] = test_id
     submission['SalePrice'] = final_predictions
     submission.head()
-    
+
     submission.to_csv('submission1.csv', index=False)
 
 

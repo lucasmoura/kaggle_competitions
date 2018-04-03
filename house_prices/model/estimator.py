@@ -10,12 +10,14 @@ from model.input_pipeline import train_input_fn, test_input_fn
 
 class LinearRegressionEstimator:
 
-    def __init__(self, train_data, train_targets, validation_data,
-                 validation_targets, numeric_columns, test_data,
-                 bucket_columns, categorical_columns, num_epochs, batch_size):
+    def __init__(self, train_data, train_targets, use_validation,
+                 validation_data, validation_targets, numeric_columns,
+                 test_data, bucket_columns, categorical_columns,
+                 num_epochs, batch_size):
         self.train_data = train_data
         self.train_targets = train_targets
 
+        self.use_validation = use_validation
         self.validation_data = validation_data
         self.validation_targets = validation_targets
 
@@ -59,9 +61,9 @@ class LinearRegressionEstimator:
         categorical_columns = []
 
         for key, value in self.categorical_columns.items():
-            column = tf.feature_column.categorical_column_with_identity(
+            column = tf.feature_column.categorical_column_with_vocabulary_list(
                 key=key,
-                num_buckets=value
+                vocabulary_list=value
             )
 
             categorical_columns.append(column)
@@ -80,7 +82,11 @@ class LinearRegressionEstimator:
 
         model_dir = tempfile.mkdtemp()
         self.estimator = tf.estimator.LinearRegressor(
-            model_dir=model_dir, feature_columns=columns
+            model_dir=model_dir, feature_columns=columns,
+            optimizer=tf.train.FtrlOptimizer(
+                    learning_rate=0.1,
+                    l1_regularization_strength=1.0,
+                    l2_regularization_strength=1.0)
         )
 
         self.estimator.train(
@@ -93,17 +99,18 @@ class LinearRegressionEstimator:
              )
          )
 
-        predictions = self.estimator.predict(
-             input_fn=test_input_fn(
-                 data_dataframe=self.validation_data
-             )
-         )
+        if self.use_validation:
+            predictions = self.estimator.predict(
+                input_fn=test_input_fn(
+                    data_dataframe=self.validation_data
+                )
+            )
 
-        pred = [x['predictions'].item(0) for x in predictions]
-        val_values = self.validation_targets.values
+            pred = [x['predictions'].item(0) for x in predictions]
+            val_values = self.validation_targets.values
 
-        rmse = math.sqrt(mean_squared_error(pred, val_values))
-        print('Validation metric: {}'.format(rmse))
+            rmse = math.sqrt(mean_squared_error(pred, val_values))
+            print('Validation metric: {}'.format(rmse))
 
         predictions = self.estimator.predict(
             input_fn=test_input_fn(
@@ -113,4 +120,3 @@ class LinearRegressionEstimator:
 
         pred = [x['predictions'].item(0) for x in predictions]
         return pred
-
