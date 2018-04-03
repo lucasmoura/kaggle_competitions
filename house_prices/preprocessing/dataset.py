@@ -4,6 +4,8 @@ import numpy as np
 from scipy.special import boxcox1p
 from scipy.stats import skew
 
+from sklearn.preprocessing import StandardScaler
+
 
 class Dataset:
 
@@ -91,6 +93,7 @@ class Dataset:
     def drop_values(self, dataset):
         dataset = dataset.drop(['Utilities'], axis=1)
         dataset = dataset.drop(['SalePrice'], axis=1)
+        dataset = dataset.drop(['Id'], axis=1)
 
         return dataset
 
@@ -128,7 +131,7 @@ class Dataset:
         skewed_feats = dataset[numeric_feats].apply(
             lambda x: skew(x.dropna())).sort_values(ascending=False)
         skewness = pd.DataFrame({'Skew': skewed_feats})
-        skewness = skewness[abs(skewness) > 0.75]
+        skewness = skewness[abs(skewness) > 0.5]
         skewed_features = skewness.index
         lam = 0.15
         for feat in skewed_features:
@@ -140,5 +143,13 @@ class Dataset:
         self.train = dataset[:ntrain]
         self.test = dataset[ntrain:]
         self.targets = pd.DataFrame(np.log(y_train))
+
+        numerical_features = self.train.select_dtypes(
+            exclude=["object"]).columns
+        normalizer = StandardScaler()
+        self.train.loc[:, numerical_features] = normalizer.fit_transform(
+            self.train.loc[:, numerical_features])
+        self.test.loc[:, numerical_features] = normalizer.transform(
+            self.test.loc[:, numerical_features])
 
         return self.train, self.test, self.targets, self.test_id
