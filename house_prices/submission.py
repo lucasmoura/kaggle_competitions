@@ -3,8 +3,6 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
-
 from preprocessing.dataset import Dataset
 from model.estimator import LinearRegressionEstimator
 
@@ -32,10 +30,10 @@ def create_argparse():
                         type=int,
                         help='Size of batch')
 
-    parser.add_argument('-uv',
-                        '--use-validation',
+    parser.add_argument('-nf',
+                        '--num-folds',
                         type=int,
-                        help='If validation data should be used')
+                        help='Number of cross validation folds to run')
 
     return parser
 
@@ -46,19 +44,10 @@ def main():
 
     train_file = user_args['train_file']
     test_file = user_args['test_file']
-    use_validation = True if user_args['use_validation'] == 1 else False
 
     print('Creating datasets ...')
     dataset = Dataset(train_file, test_file)
     train_data, test_data, train_targets, test_id = dataset.create_dataset()
-
-    if use_validation:
-        print('Creating validation dataset ...')
-        (train_data, validation_data,
-         train_targets, validation_targets) = train_test_split(
-            train_data, train_targets, random_state=42, test_size=.2)
-    else:
-        validation_data, validation_targets = None, None
 
     print('Creating model ...')
     categorical_columns = dataset.categorical_cols
@@ -67,20 +56,24 @@ def main():
 
     num_epochs = user_args['num_epochs']
     batch_size = user_args['batch_size']
+    num_folds = user_args['num_folds']
 
     linear_model = LinearRegressionEstimator(
         train_data=train_data,
         train_targets=train_targets,
-        use_validation=use_validation,
-        validation_data=validation_data,
-        validation_targets=validation_targets,
         test_data=test_data,
         numeric_columns=numeric_columns,
         bucket_columns=bucket_columns,
         categorical_columns=categorical_columns,
         num_epochs=num_epochs,
-        batch_size=batch_size
+        batch_size=batch_size,
+        num_folds=num_folds
     )
+
+    print('Evaluating model ...')
+    linear_model.evaluate()
+
+    print('Creating prediction ...')
     pred = linear_model.run()
     final_predictions = np.exp(pred)
 
