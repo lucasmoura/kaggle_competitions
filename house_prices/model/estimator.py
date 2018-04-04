@@ -1,12 +1,11 @@
-import math
 import tempfile
 
 import tensorflow as tf
 
-from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 
-from model.input_pipeline import train_input_fn, test_input_fn
+from model.input_pipeline import (train_input_fn, validation_input_fn,
+                                  test_input_fn)
 
 
 class LinearRegressionEstimator:
@@ -74,14 +73,34 @@ class LinearRegressionEstimator:
 
         return categorical_columns + bucket_columns + numeric_columns
 
+    def model_evaluate(self, estimator, validation_data, validation_targets):
+
+        def rmse(labels, predictions):
+            return {
+                'rmse': tf.metrics.root_mean_squared_error(
+                    tf.cast(labels, tf.float32), tf.cast(
+                        predictions['predictions'], tf.float32))
+            }
+
+        estimator = tf.contrib.estimator.add_metrics(estimator, rmse)
+
+        evaluate_dict = estimator.evaluate(
+            input_fn=validation_input_fn(
+                data_dataframe=validation_data,
+                target_dataframe=validation_targets,
+                batch_size=self.batch_size,
+            )
+        )
+
+        return evaluate_dict['rmse']
+
     def evaluate(self):
         k_fold = KFold(n_splits=self.num_folds)
-        rmse = []
-        index = 1
+        k_fold_splits = k_fold.split(self.train_data)
+        all_rmse = []
 
-        for train_index, validation_index in k_fold.split(self.train_data):
-            print('Running fold {}'.format(index))
-            index += 1
+        for index, (train_index, validation_index) in enumerate(k_fold_splits):
+            print('Running fold {}'.format(index + 1))
 
             train_data = self.train_data.loc[train_index, :]
             train_targets = self.train_targets.loc[train_index, :]
@@ -92,15 +111,13 @@ class LinearRegressionEstimator:
             columns = self.get_feature_columns()
             estimator = self.create_model(columns)
             self.train_model(estimator, train_data, train_targets)
-            predictions = self.model_predictions(estimator, validation_data)
+            rmse_value = self.model_evaluate(
+                estimator, validation_data, validation_targets)
 
-            pred = [x['predictions'].item(0) for x in predictions]
-            val_values = validation_targets.values
+            all_rmse.append(rmse_value)
 
-            rmse.append(math.sqrt(mean_squared_error(pred, val_values)))
-
-        rmse_value = sum(rmse) / len(rmse)
-        print('Rmse: {}'.format(rmse_value))
+        final_rmse = sum(all_rmse) / len(all_rmse)
+        print('Rmse: {}'.format(final_rmse))
 
     def create_model(self, columns):
         model_dir = tempfile.mkdtemp()
