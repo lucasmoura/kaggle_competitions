@@ -45,21 +45,7 @@ def load_data(data_path, parse_date=False):
     return pd.read_csv(data_path, **args)
 
 
-def main():
-    parser = create_argparser()
-    user_args = vars(parser.parse_args())
-
-    sales_train = load_data(
-        user_args['sales_train_path'], parse_date=True)
-    item_categories = load_data(
-        user_args['item_categories_path'])
-    items = load_data(
-        user_args['items_path'])
-    shops = load_data(
-        user_args['shops_path'])
-    test = load_data(
-        user_args['test_path'])
-
+def print_data(sales_train, item_categories, items, shops, test):
     """
     data info:
 
@@ -114,6 +100,54 @@ def main():
     """
     print(test.head())
     print()
+
+
+def format_train_data(sales_train, test):
+    """
+    We are going to maintain on the train dataset only
+    data that appears on the test dataset too.
+
+    We are going to get all the shops and items that appear in
+    the test set and use only those in the training data
+    """
+
+    test_shops = test.shop_id.unique()
+    test_items = test.item_id.unique()
+
+    sales_train = sales_train[sales_train.shop_id.isin(test_shops)]
+    sales_train = sales_train[sales_train.item_id.isin(test_items)]
+
+    return sales_train
+
+
+def print_data_info(sales_train, item_categories, items, shops, test):
+    print('Size of datasets:\n')
+    print(
+        'train: {}\ntest: {}\nitems cat: {}\nitems: {}\nshops: {}\n'.format(
+            sales_train.shape, test.shape, item_categories.shape,
+            items.shape, shops.shape)
+    )
+
+
+def main():
+    parser = create_argparser()
+    user_args = vars(parser.parse_args())
+
+    sales_train = load_data(
+        user_args['sales_train_path'], parse_date=True)
+    item_categories = load_data(
+        user_args['item_categories_path'])
+    items = load_data(
+        user_args['items_path'])
+    shops = load_data(
+        user_args['shops_path'])
+    test = load_data(
+        user_args['test_path'])
+
+    print_data(sales_train, item_categories, items, shops, test)
+
+    sales_train = format_train_data(sales_train, test)
+    print_data_info(sales_train, item_categories, items, shops, test)
 
 
 if __name__ == '__main__':
