@@ -1,6 +1,6 @@
 import argparse
 
-import pandas as pd
+from dataset.dataset import load_data
 
 
 def create_argparser():
@@ -29,22 +29,6 @@ def create_argparser():
     return parser
 
 
-def date_parser(date):
-    return pd.to_datetime(date, format='%d.%m.%Y')
-
-
-def load_data(data_path, parse_date=False):
-    args = {}
-
-    if parse_date:
-        args = {
-            'parse_dates': ['date'],
-            'date_parser': lambda date: date_parser(date)
-        }
-
-    return pd.read_csv(data_path, **args)
-
-
 def print_data(sales_train, item_categories, items, shops, test):
     """
     data info:
@@ -57,7 +41,10 @@ def print_data(sales_train, item_categories, items, shops, test):
         item_id:        unique identifier of a product
         item_price:     current price of an item
         item_cnt_day:   number of products sold. You are predicting a
-                        monthly amount of this measure
+                        monthly amount of this measure (*Sometimes this
+                        variables are negative, that may indicate
+                        refunds on that day, maybe I should remove negative
+                        variables from the train data ?)
     """
     print(sales_train.head())
     print()
@@ -102,24 +89,6 @@ def print_data(sales_train, item_categories, items, shops, test):
     print()
 
 
-def format_train_data(sales_train, test):
-    """
-    We are going to maintain on the train dataset only
-    data that appears on the test dataset too.
-
-    We are going to get all the shops and items that appear in
-    the test set and use only those in the training data
-    """
-
-    test_shops = test.shop_id.unique()
-    test_items = test.item_id.unique()
-
-    sales_train = sales_train[sales_train.shop_id.isin(test_shops)]
-    sales_train = sales_train[sales_train.item_id.isin(test_items)]
-
-    return sales_train
-
-
 def print_data_info(sales_train, item_categories, items, shops, test):
     print('Size of datasets:\n')
     print(
@@ -145,8 +114,6 @@ def main():
         user_args['test_path'])
 
     print_data(sales_train, item_categories, items, shops, test)
-
-    sales_train = format_train_data(sales_train, test)
     print_data_info(sales_train, item_categories, items, shops, test)
 
 
