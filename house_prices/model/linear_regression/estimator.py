@@ -4,8 +4,8 @@ import tensorflow as tf
 
 from sklearn.model_selection import KFold
 
-from model.input_pipeline import (train_input_fn, validation_input_fn,
-                                  test_input_fn)
+from model.linear_regression.input_pipeline import (train_input_fn, validation_input_fn,
+                                                    test_input_fn)
 
 
 class LinearRegressionEstimator:

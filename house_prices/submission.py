@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from preprocessing.dataset import Dataset
-from model.estimator import LinearRegressionEstimator
+from model.linear_regression.estimator import LinearRegressionEstimator
 
 
 def create_argparse():
