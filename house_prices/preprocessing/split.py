@@ -46,6 +46,6 @@ def create_folds(dataset, num_folds, seed=42):
     kf = prepare_kfold(dataset, num_folds, seed)
 
     for fold_index, (_, test_indexes) in enumerate(kf.split(dataset)):
-        dataset.loc[test_indexes, 'fold'] = fold_index
+        dataset.iloc[test_indexes, dataset.columns.get_loc('fold')] = fold_index
 
     return dataset
