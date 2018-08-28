@@ -6,3 +6,5 @@ flake8
 ipython
 ipdb
 scipy
+jupyter
+matplotlib
