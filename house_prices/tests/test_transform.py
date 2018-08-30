@@ -3,7 +3,9 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from preprocessing.transform import transform_categorical_column
+from preprocessing.transform import (transform_categorical_column,
+                                     transform_column_into_categorical_dtype,
+                                     transform_categorical_to_one_hot)
 
 
 class TestTransform(unittest.TestCase):
@@ -23,3 +25,18 @@ class TestTransform(unittest.TestCase):
 
         self.assertEqual(dataset[column].dtype, np.int64)
         self.assertTrue(dataset.equals(expected_dataset))
+
+    def test_transform_column_into_categorical_dtype(self):
+        dataset = self.create_dummy_dataframe()
+        self.assertEqual(dataset['a'].dtype, 'object')
+
+        transform_column_into_categorical_dtype(dataset, 'a')
+        self.assertEqual(dataset['a'].dtype, 'category')
+
+    def test_transform_categorical_to_one_hot(self):
+        dataset = self.create_dummy_dataframe()
+        transform_column_into_categorical_dtype(dataset, 'a')
+        self.assertEqual(len(dataset.columns), 1)
+
+        dataset = transform_categorical_to_one_hot(dataset, 'a')
+        self.assertEqual(len(dataset.columns), 5)
