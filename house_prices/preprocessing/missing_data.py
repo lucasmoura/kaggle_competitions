@@ -21,6 +21,4 @@ def fill_values_with_median(dataset, column_names):
 
 def drop_columns(dataset, column_names):
     for column in column_names:
-        dataset = dataset.drop([column], axis=1)
-
-    return dataset
+        dataset.drop([column], axis=1, inplace=True)

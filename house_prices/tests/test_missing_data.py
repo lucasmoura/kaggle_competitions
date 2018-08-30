@@ -20,7 +20,7 @@ class MissingDataTest(unittest.TestCase):
         dataset = self.create_dummy_dataframe(10)
 
         expected_columns = ['a', 'c']
-        dataset = drop_columns(dataset, ['b', 'd'])
+        drop_columns(dataset, ['b', 'd'])
         self.assertEqual(dataset.columns.tolist(), expected_columns)
 
     def test_fill_nan_with_value(self):
