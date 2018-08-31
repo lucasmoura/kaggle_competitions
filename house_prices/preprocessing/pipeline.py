@@ -33,6 +33,8 @@ class Pipeline:
 
 class Operation:
 
+    ORDER = 0
+
     def __init__(self, signature):
         self.signature = signature
 
@@ -65,11 +67,15 @@ class Operation:
 
 class FillMissing(Operation):
 
+    ORDER = 1
+
     def __init__(self):
         super().__init__(signature='fill')
 
 
 class Transformations(Operation):
+
+    ORDER = 2
 
     def __init__(self):
         super().__init__(signature='transform')
@@ -77,17 +83,23 @@ class Transformations(Operation):
 
 class Create(Operation):
 
+    ORDER = 3
+
     def __init__(self):
         super().__init__(signature='create')
 
 
 class Drop(Operation):
 
+    ORDER = 4
+
     def __init__(self):
         super().__init__(signature='drop')
 
 
 class Finalize:
+
+    ORDER = 5
 
     def finalize_train(self, train):
         raise NotImplementedError
