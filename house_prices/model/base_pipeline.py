@@ -71,8 +71,8 @@ class BaseFillMissing(FillMissing):
 
 class BaseTransformations(Transformations):
 
-    def __init__(self, train, validation, test):
-        super().__init__(train, validation, test)
+    def __init__(self):
+        super().__init__()
 
         self.category_columns = [
             'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
@@ -123,8 +123,8 @@ class BaseDrop(Drop):
 
 
 class BaseCreate(Create):
-    def __init__(self, train, validation, test):
-        super().__init__(train, validation, test)
+    def __init__(self):
+        super().__init__()
 
         self.category_columns = [
             'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
@@ -138,10 +138,10 @@ class BaseCreate(Create):
 
     def handle_missing_columns(self):
         train, validation, test = self.data
-        self.create_new_columns(train, validation)
+        self.handle_new_columns(train, validation)
         self.remove_additional_columns(validation, train)
 
-        self.create_new_columns(train, test)
+        self.handle_new_columns(train, test)
         self.remove_additional_columns(test, train)
 
     def select_converted_categorical_columns(self, dataset):
@@ -153,7 +153,7 @@ class BaseCreate(Create):
 
         return set(d1_valid_columns) - set(d2_valid_columns)
 
-    def create_new_columns(self, d1, d2):
+    def handle_new_columns(self, d1, d2):
         missing_columns = self.get_missing_columns(d1, d2)
 
         for column in missing_columns:
@@ -183,16 +183,22 @@ class BaseFinalize(Finalize):
 
     def create_supervised_dataset(self, dataset):
         y = dataset['SalePrice']
-        X = dataset[self.column_order]
+        X = dataset[self.columns_order]
 
         return X, y
 
+    def set_column_order(self, train):
+        train_columns = train.columns.tolist()
+        train_columns.remove('SalePrice')
+
+        self.columns_order = train_columns
+
     def finalize_train(self, train):
-        self.column_order = list(train.columns.tolist().remove('SalePrice'))
-        self.train_data = self.create_supervised_dataset(train)
+        self.set_column_order(train)
+        return self.create_supervised_dataset(train)
 
     def finalize_validation(self, validation):
-        self.validation_data = self.create_supervised_dataset(validation)
+        return self.create_supervised_dataset(validation)
 
     def finalize_test(self, test):
-        self.test_data = self.test[self.column_order]
+        return test[self.columns_order]

@@ -27,20 +27,8 @@ class Pipeline:
         train, validation, test = self.run_operations()
 
         self.train_data = self.finalize.finalize_train(train)
-        self.validation_data = self.finalize_validation(validation)
-        self.test_data = self.finalize_test(test)
-
-    @property
-    def train_data(self):
-        return self.train_data
-
-    @property
-    def validation_data(self):
-        return self.validation_data
-
-    @property
-    def test_data(self):
-        return self.test_data
+        self.validation_data = self.finalize.finalize_validation(validation)
+        self.test_data = self.finalize.finalize_test(test)
 
 
 class Operation:
@@ -100,9 +88,6 @@ class Drop(Operation):
 
 
 class Finalize:
-
-    def __init__(self, train, validation, test):
-        self.data = (train, validation, test)
 
     def finalize_train(self, train):
         raise NotImplementedError
