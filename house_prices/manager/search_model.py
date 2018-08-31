@@ -22,15 +22,13 @@ def iterate_over_packages(path):
 
 
 def create_import_name(model_path, name):
-    return model_path + '.' + name
+    return model_path.replace('/', '.') + '.' + name
 
 
 def find_model(model_name, module='models'):
-    models_path = 'models'
-
-    for finder, name, ispkg in iterate_over_module([models_path]):
+    for finder, name, ispkg in iterate_over_module(module):
         if name == model_name and ispkg:
-            return create_import_name(models_path, name)
+            return create_import_name(module, name)
 
     return None
 
