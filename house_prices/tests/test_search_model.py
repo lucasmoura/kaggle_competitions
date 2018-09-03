@@ -1,8 +1,9 @@
 import unittest
 
-from manager.search_model import ModelSearcher, PipelineSearcher
+from manager.search_model import ModelSearcher, PipelineSearcher, MetricSearcher
 
 from tests.test_models.linear_regression.model import Test
+from tests.test_models.metric import TestMetric
 from tests.test_models.linear_regression.pipelines.p1.pipeline import (LFillMissing,
                                                                        LTransformations,
                                                                        LCreate,
@@ -58,3 +59,9 @@ class TestSearchModel(unittest.TestCase):
         model = model_searcher.get_class('linear_regression')
 
         self.assertEqual(model, Test)
+
+    def test_load_metric(self):
+        metric_searcher = MetricSearcher('tests.test_models')
+        metric_class = metric_searcher.get_class('metric')
+
+        self.assertEqual(metric_class, TestMetric)

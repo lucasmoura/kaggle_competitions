@@ -8,9 +8,10 @@ INVALID_PATH = -1
 
 class ClassSearcher:
 
-    def __init__(self, folder_to_look):
+    def __init__(self, folder_to_look, is_pkg=True):
         self.folder_to_look = folder_to_look
         self.path = None
+        self.is_pkg = is_pkg
 
     def iterate_over_module(self, path):
         if type(path) != list:
@@ -25,7 +26,7 @@ class ClassSearcher:
         parsed_look_path = self.folder_to_look.replace('.', '/')
 
         for finder, name, ispkg in self.iterate_over_module(parsed_look_path):
-            if name == module_name and ispkg:
+            if name == module_name and self.is_pkg == ispkg:
                 return self.create_import_name(name, self.folder_to_look)
 
         return None
@@ -38,6 +39,9 @@ class ClassSearcher:
 
         return self.load_module(self.path)
 
+    def create_module_path(self, module_path):
+        return self.create_import_name(self.default_module, module_path)
+
     def load_module_classes(self, module_path):
         module = importlib.import_module(module_path)
         return inspect.getmembers(module, inspect.isclass)
@@ -47,14 +51,14 @@ class ClassSearcher:
                 if class_obj.__module__ == module_path]
 
     def load_module(self, module_path):
-        module_path = self.create_import_name(self.default_module, module_path)
+        module_path = self.create_module_path(module_path)
         model_classes = self.load_module_classes(module_path)
         return self.module_defined_classes(model_classes, module_path)
 
 
 class ModelSearcher(ClassSearcher):
-    def __init__(self, folder_to_look):
-        super().__init__(folder_to_look)
+    def __init__(self, folder_to_look, is_pkg=True):
+        super().__init__(folder_to_look, is_pkg)
         self.default_module = 'model'
 
     def load_module(self, module_path):
@@ -73,3 +77,11 @@ class PipelineSearcher(ClassSearcher):
     def load_module(self, module_path):
         module_defined_classes = super().load_module(module_path)
         return self.sort_operations(module_defined_classes)
+
+
+class MetricSearcher(ModelSearcher):
+    def __init__(self, folder_to_look):
+        super().__init__(folder_to_look, is_pkg=False)
+
+    def create_module_path(self, module_path):
+        return module_path
