@@ -14,13 +14,6 @@ def iterate_over_module(path):
     return pkgutil.iter_modules(path)
 
 
-def iterate_over_packages(path):
-    if type(path) != list:
-        path = [path]
-
-    return pkgutil.walk_packages(path)
-
-
 def create_import_name(model_path, name):
     return model_path.replace('/', '.') + '.' + name
 
@@ -37,7 +30,7 @@ def find_pipeline(pipeline_name, model_path):
     pipeline_path = create_import_name(model_path, 'pipelines')
     pipeline_file_path = pipeline_path.replace('.', '/')
 
-    for importer, name, ispkg in iterate_over_packages(pipeline_file_path):
+    for finder, name, ispkg in iterate_over_module(pipeline_file_path):
         if name == pipeline_name and ispkg:
             return create_import_name(pipeline_path, name)
 

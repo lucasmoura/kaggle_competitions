@@ -1,6 +1,13 @@
 import unittest
 
-from manager.search_model import find_model, find_pipeline
+from manager.search_model import find_model, find_pipeline, load_pipeline_operations, load_model
+
+from tests.test_models.linear_regression.model import Test
+from tests.test_models.linear_regression.pipelines.p1.pipeline import (LFillMissing,
+                                                                       LTransformations,
+                                                                       LCreate,
+                                                                       LDrop,
+                                                                       LFinalize)
 
 
 class TestSearchModel(unittest.TestCase):
@@ -34,3 +41,16 @@ class TestSearchModel(unittest.TestCase):
             pipeline_path,
             None
         )
+
+    def test_load_pipeline_operations(self):
+        pipeline_path = 'tests.test_models.linear_regression.pipelines.p1'
+        expected_order = [LFillMissing, LTransformations, LCreate, LDrop, LFinalize]
+
+        operations = load_pipeline_operations(pipeline_path)
+        self.assertEqual(operations, expected_order)
+
+    def test_load_model(self):
+        model_path = 'tests.test_models.linear_regression'
+        model = load_model(model_path)
+
+        self.assertEqual(model, Test)
