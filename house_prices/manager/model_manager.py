@@ -1,3 +1,5 @@
+import pandas as pd
+
 from manager.search_model import ModelSearcher, PipelineSearcher, MetricSearcher
 from preprocessing.pipeline import Pipeline
 
@@ -19,6 +21,7 @@ class ModelManager:
 
         pipeline_searcher = PipelineSearcher(model_searcher.path)
         operations = pipeline_searcher.get_class(pipeline_name)
+        self.save_path = pipeline_searcher.path
 
         metric = MetricSearcher('models').get_class('metric')
 
@@ -56,41 +59,63 @@ class ModelManager:
     def update_results(self, model_result):
         raise NotImplementedError
 
+    def run_pipeline(self, verbose):
+        if verbose:
+            print('Running pipeline')
+
+        self.pipeline.run_pipeline(verbose)
+
+    def fit_model(self, verbose):
+        if verbose:
+            print('Training model')
+
+        train_x, train_y = self.pipeline.train_data
+        self.ml_model.fit(train_x, train_y)
+
+    def evaluate_model(self, verbose):
+        if verbose:
+            print('Evaluating model')
+
+        validation_x, validation_y = self.pipeline.validation_data
+        return self.ml_model.evaluate(validation_x, validation_y)
+
     def run(self, verbose=True):
         self.metric_values = []
 
         for folder_num in range(0, self.num_folds):
             self.set_pipeline(folder_num)
-
-            if verbose:
-                print('Running pipeline')
-
-            self.pipeline.run_pipeline(verbose)
+            self.run_pipeline(verbose)
             self.update_model()
 
-            if verbose:
-                print('Gathering data')
-
-            train_x, train_y = self.pipeline.train_data
-            validation_x, validation_y = self.pipeline.validation_data
-
-            if verbose:
-                print('Training model')
-
-            self.ml_model.fit(train_x, train_y)
-
-            if verbose:
-                print('Evaluating model')
-
-            model_result = self.ml_model.evaluate(validation_x, validation_y)
-
+            self.fit_model(verbose)
+            model_result = self.evaluate_model(verbose)
             self.update_results(model_result)
+
+        if verbose:
             print()
 
 
 class ModelEvaluation(ModelManager):
+    def create_submission_path(self):
+        save_folder = self.save_path.replace('.', '/')
+        return save_folder + '/submission.csv'
+
+    def create_submission(self, predictions):
+        submission_df = pd.DataFrame({'Id': self.test.Id, 'SalePrice': predictions})
+        submission_df.to_csv(self.create_submission_path(), index=False)
+
     def update_model(self):
         pass
 
     def update_results(self, model_result):
         self.metric_values.append(model_result)
+
+    def get_test_predictions(self):
+        test_x = self.pipeline.test_data
+        return self.ml_model.predict(test_x)
+
+    def run(self, verbose=True):
+        super().run(verbose)
+
+        predictions = self.get_test_predictions()
+        self.create_submission(predictions)
