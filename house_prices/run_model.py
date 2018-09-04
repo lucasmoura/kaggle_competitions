@@ -32,6 +32,11 @@ def create_argparse():
                         type=int,
                         help='Number of folds to be used in cross validation')
 
+    parser.add_argument('-cs',
+                        '--create-submission',
+                        type=int,
+                        help='If a submission should be created for this model')
+
     return parser
 
 
@@ -45,9 +50,10 @@ def main():
     model_name = user_args['model_name']
     pipeline_name = user_args['pipeline_name']
     num_folds = user_args['num_folds']
+    create_submission = user_args['create_submission']
 
     model_evaluation = ModelEvaluation(
-        train, test, model_name, pipeline_name, num_folds)
+        train, test, model_name, pipeline_name, num_folds, create_submission)
 
     model_evaluation.run()
 

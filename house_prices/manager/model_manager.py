@@ -6,7 +6,8 @@ from preprocessing.pipeline import Pipeline
 
 class ModelManager:
 
-    def __init__(self, train, test, model_name, pipeline_name, num_folds):
+    def __init__(self, train, test, model_name, pipeline_name,
+                 num_folds, create_submission):
         self.train, self.test = train, test
         model, operations, metric = self.load_modules(model_name, pipeline_name)
 
@@ -14,6 +15,7 @@ class ModelManager:
         self.build_pipeline(operations)
 
         self.num_folds = num_folds
+        self.create_submission = create_submission
 
     def load_modules(self, model_name, pipeline_name):
         model_searcher = ModelSearcher('models')
@@ -48,6 +50,9 @@ class ModelManager:
     def extract_validation_set(self, folder_num, column_name='fold'):
         train_data = self.train.copy()
 
+        if folder_num == -1:
+            return train_data, None
+
         validation = train_data.loc[train_data[column_name] == folder_num]
         train = train_data.loc[train_data[column_name] != folder_num]
 
@@ -79,20 +84,23 @@ class ModelManager:
         validation_x, validation_y = self.pipeline.validation_data
         return self.ml_model.evaluate(validation_x, validation_y)
 
+    def perform_training(self, folder_num, verbose=True):
+        self.set_pipeline(folder_num)
+        self.run_pipeline(verbose)
+        self.update_model()
+
+        self.fit_model(verbose)
+
     def run(self, verbose=True):
         self.metric_values = []
 
         for folder_num in range(0, self.num_folds):
-            self.set_pipeline(folder_num)
-            self.run_pipeline(verbose)
-            self.update_model()
-
-            self.fit_model(verbose)
+            self.perform_training(folder_num, verbose)
             model_result = self.evaluate_model(verbose)
             self.update_results(model_result)
 
-        if verbose:
-            print()
+            if verbose:
+                print()
 
 
 class ModelEvaluation(ModelManager):
@@ -100,7 +108,10 @@ class ModelEvaluation(ModelManager):
         save_folder = self.save_path.replace('.', '/')
         return save_folder + '/submission.csv'
 
-    def create_submission(self, predictions):
+    def generate_submission(self, predictions, verbose):
+        if verbose:
+            print('Creating submission')
+
         submission_df = pd.DataFrame({'Id': self.test.Id, 'SalePrice': predictions})
         submission_df.to_csv(self.create_submission_path(), index=False)
 
@@ -117,5 +128,13 @@ class ModelEvaluation(ModelManager):
     def run(self, verbose=True):
         super().run(verbose)
 
-        predictions = self.get_test_predictions()
-        self.create_submission(predictions)
+        if verbose:
+            print()
+
+        if self.create_submission:
+            if verbose:
+                print('Training with full dataset')
+
+            self.perform_training(folder_num=-1, verbose=verbose)
+            predictions = self.get_test_predictions()
+            self.generate_submission(predictions, verbose)

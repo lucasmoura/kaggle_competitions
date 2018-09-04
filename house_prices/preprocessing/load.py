@@ -17,4 +17,4 @@ def load_dataset(dataset_path, verbose=False):
 
 
 def save_dataset(dataset, save_folder, save_name):
-    dataset.to_csv(os.path.join(save_folder, save_name))
+    dataset.to_csv(os.path.join(save_folder, save_name), index=False)
