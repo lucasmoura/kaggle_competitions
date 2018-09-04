@@ -7,27 +7,43 @@ class Pipeline:
     def set_dataset(self, train, validation, test):
         self.data = (train, validation, test)
 
-    def set_operations(self, fill_missing, transform, drop, create):
-        self.operations = (fill_missing, transform, drop, create)
+    def set_operations(self, fill_missing, transform, create, drop):
+        self.operations = (
+            fill_missing(),
+            transform(),
+            create(),
+            drop()
+        )
 
     def set_finalize(self, finalize):
-        self.finalize = finalize
+        self.finalize = finalize()
 
-    def run_operations(self):
+    def run_operations(self, verbose):
         train, validation, test = self.data
 
         for operation in self.operations:
             operation.set_dataset(train, validation, test)
+
+            if verbose:
+                print('Running pipeline operation {}'.format(
+                    operation.name))
+
             operation.run()
             train, validation, test = operation.get_dataset()
 
         return train, validation, test
 
-    def run_pipeline(self):
-        train, validation, test = self.run_operations()
+    def run_pipeline(self, verbose=True):
+        train, validation, test = self.run_operations(verbose)
 
         self.train_data = self.finalize.finalize_train(train)
         self.validation_data = self.finalize.finalize_validation(validation)
+
+        """
+        We believe that the test dataset should not be modified,
+        therefore, if we run this pipeline multiple times, we should not
+        re-process the test dataset.
+        """
         self.test_data = self.finalize.finalize_test(test)
 
 
@@ -71,6 +87,7 @@ class FillMissing(Operation):
 
     def __init__(self):
         super().__init__(signature='fill')
+        self.name = 'Fill Missing'
 
 
 class Transformations(Operation):
@@ -79,6 +96,7 @@ class Transformations(Operation):
 
     def __init__(self):
         super().__init__(signature='transform')
+        self.name = 'Transformation'
 
 
 class Create(Operation):
@@ -87,6 +105,7 @@ class Create(Operation):
 
     def __init__(self):
         super().__init__(signature='create')
+        self.name = 'Create'
 
 
 class Drop(Operation):
@@ -95,11 +114,15 @@ class Drop(Operation):
 
     def __init__(self):
         super().__init__(signature='drop')
+        self.name = 'Drop'
 
 
 class Finalize:
 
     ORDER = 5
+
+    def __init__(self):
+        self.name = 'Finalize'
 
     def finalize_train(self, train):
         raise NotImplementedError

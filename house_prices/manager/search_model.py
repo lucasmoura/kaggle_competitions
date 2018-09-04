@@ -69,7 +69,13 @@ class ModelSearcher(ClassSearcher):
 class PipelineSearcher(ClassSearcher):
     def __init__(self, folder_to_look):
         super().__init__(folder_to_look)
+        self.add_folder_to_search_at()
         self.default_module = 'pipeline'
+
+    def add_folder_to_search_at(self):
+        if not self.folder_to_look.endswith('pipelines'):
+            self.folder_to_look = self.create_import_name(
+                'pipelines', self.folder_to_look)
 
     def sort_operations(self, operations_classes):
         return sorted(operations_classes, key=lambda x: x.ORDER)
