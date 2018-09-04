@@ -10,6 +10,9 @@ class LinearRegression(Model):
     def fit(self, train_x, train_y):
         self.linear_regression.fit(train_x, train_y)
 
+    def set_config(self, config):
+        self.linear_regression.set_params(**config)
+
     def evaluate(self, validation_x, validation_y):
         predictions = self.linear_regression.predict(validation_x)
         return self.metric.compute(predictions, validation_y)

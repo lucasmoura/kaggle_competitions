@@ -9,6 +9,9 @@ class Model:
     def set_evaluation_metric(self, metric):
         self.metric = metric
 
+    def set_config(self, config):
+        raise NotImplementedError
+
     def evaluate(self, x, y):
         raise NotImplementedError
 

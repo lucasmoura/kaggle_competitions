@@ -2,6 +2,7 @@ import pandas as pd
 
 from manager.search_model import ModelSearcher, PipelineSearcher, MetricSearcher
 from preprocessing.pipeline import Pipeline
+from utils.json import load_json
 
 
 class ModelManager:
@@ -104,16 +105,28 @@ class ModelManager:
 
 
 class ModelEvaluation(ModelManager):
-    def create_submission_path(self):
+    def __init__(self, train, test, model_name, pipeline_name,
+                 num_folds, create_submission):
+        super().__init__(train, test, model_name, pipeline_name,
+                         num_folds, create_submission)
+        self.set_model_config()
+
+    def create_path(self, file_name):
         save_folder = self.save_path.replace('.', '/')
-        return save_folder + '/submission.csv'
+        return save_folder + '/' + file_name
+
+    def set_model_config(self):
+        config_path = self.create_path('config.json')
+        config = load_json(config_path)
+
+        self.ml_model.set_config(config)
 
     def generate_submission(self, predictions, verbose):
         if verbose:
             print('Creating submission')
 
         submission_df = pd.DataFrame({'Id': self.test.Id, 'SalePrice': predictions})
-        submission_df.to_csv(self.create_submission_path(), index=False)
+        submission_df.to_csv(self.create_path('submission.csv'), index=False)
 
     def update_model(self):
         pass
