@@ -37,13 +37,10 @@ class Pipeline:
         train, validation, test = self.run_operations(verbose)
 
         self.train_data = self.finalize.finalize_train(train)
-        self.validation_data = self.finalize.finalize_validation(validation)
 
-        """
-        We believe that the test dataset should not be modified,
-        therefore, if we run this pipeline multiple times, we should not
-        re-process the test dataset.
-        """
+        if validation is not None:
+            self.validation_data = self.finalize.finalize_validation(validation)
+
         self.test_data = self.finalize.finalize_test(test)
 
 
@@ -59,6 +56,11 @@ class Operation:
 
     def get_dataset(self):
         return self.data
+
+    def loop_datasets(self):
+        for dataset in self.data:
+            if dataset is not None:
+                yield dataset
 
     def get_signature_methods(self):
         methods = []

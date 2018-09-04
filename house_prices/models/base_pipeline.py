@@ -17,11 +17,11 @@ class BaseFillMissing(FillMissing):
                    'MasVnrType', 'BsmtExposure', 'BsmtFinType1', 'BsmtFinType2',
                    'Fence']
 
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             fill_nan_with_value(dataset, columns, 'NP')
 
     def fill_mas_vnr_type(self):
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             fill_nan_with_value(dataset, ['MasVnrType'], 'NP')
 
     def fill_with_zero(self):
@@ -30,21 +30,21 @@ class BaseFillMissing(FillMissing):
                    'BsmtFullBath', 'BsmtHalfBath', 'MasVnrArea']
 
         for column in columns:
-            for dataset in self.data:
+            for dataset in self.loop_datasets():
                 fill_nan_with_value(dataset, [column], 0)
 
     def fill_lot_frontage(self):
         train = self.data[0]
         mean = train['LotFrontage'].mean()
 
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             fill_nan_with_value(dataset, ['LotFrontage'], mean)
 
     def mode_fill(self, column):
         train = self.data[0]
         mode = train[column].mode()[0]
 
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             fill_nan_with_value(dataset, [column], mode)
 
     def fill_electrical(self):
@@ -86,7 +86,7 @@ class BaseTransformations(Transformations):
 
     def apply_ordinal_transformation(self, ordinal_map, columns):
         for column in columns:
-            for dataset in self.data:
+            for dataset in self.loop_datasets():
                 transform_categorical_column(dataset, column, ordinal_map)
 
     def transform_to_ordinal(self):
@@ -109,7 +109,7 @@ class BaseTransformations(Transformations):
 
     def transform_type_to_categorical(self):
         for column in self.category_columns:
-            for dataset in self.data:
+            for dataset in self.loop_datasets():
                 transform_column_into_categorical_dtype(dataset, column)
 
 
@@ -119,7 +119,7 @@ class BaseDrop(Drop):
         columns = ['PoolQC', 'MiscFeature', 'Alley',
                    'Utilities', 'Heating', 'Street', 'Id']
 
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             drop_columns(dataset, columns)
 
 
@@ -139,8 +139,10 @@ class BaseCreate(Create):
 
     def handle_missing_columns(self):
         train, validation, test = self.data
-        self.handle_new_columns(train, validation)
-        self.remove_additional_columns(validation, train)
+
+        if validation is not None:
+            self.handle_new_columns(train, validation)
+            self.remove_additional_columns(validation, train)
 
         self.handle_new_columns(train, test)
         self.remove_additional_columns(test, train)
@@ -170,7 +172,7 @@ class BaseCreate(Create):
         to perform the operations in place, this was the idea that I had.
         """
 
-        for dataset in self.data:
+        for dataset in self.loop_datasets():
             new_dataset = transform_categorical_to_one_hot(
                 dataset, self.category_columns)
 
