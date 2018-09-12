@@ -12,8 +12,8 @@ class Model:
     def set_config(self, config):
         raise NotImplementedError
 
-    def evaluate(self, x, y):
-        raise NotImplementedError
+    def evaluate(self, predictions, target):
+        return self.metric.compute(predictions, target)
 
     def predict(sefl, x):
         raise NotImplementedError

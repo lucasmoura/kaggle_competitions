@@ -13,9 +13,5 @@ class LinearRegression(Model):
     def set_config(self, config):
         self.linear_regression.set_params(**config)
 
-    def evaluate(self, validation_x, validation_y):
-        predictions = self.linear_regression.predict(validation_x)
-        return self.metric.compute(predictions, validation_y)
-
     def predict(self, test_x):
         return self.linear_regression.predict(test_x)
