@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from manager.search_model import ModelSearcher, PipelineSearcher, MetricSearcher
@@ -38,7 +39,7 @@ class ModelManager:
     def build_pipeline(self, operations):
         self.pipeline = Pipeline()
 
-        *pipeline_ops, finalize = operations
+        *pipeline_ops, finalize, self.prediction_transformer = operations
         self.pipeline.set_operations(*pipeline_ops)
         self.pipeline.set_finalize(finalize)
 
@@ -83,7 +84,13 @@ class ModelManager:
             print('Evaluating model')
 
         validation_x, validation_y = self.pipeline.validation_data
-        return self.ml_model.evaluate(validation_x, validation_y)
+        pred = self.ml_model.predict(validation_x)
+
+        trans_pred = self.prediction_transformer.transform_predictions(pred)
+        trans_val_y = self.prediction_transformer.transform_predictions(
+            validation_y)
+
+        return self.ml_model.evaluate(trans_pred, trans_val_y)
 
     def perform_training(self, folder_num, verbose=True):
         self.set_pipeline(folder_num)
@@ -102,6 +109,8 @@ class ModelManager:
 
             if verbose:
                 print()
+
+        print('Mean metric value: {}'.format(np.mean(self.metric_values)))
 
 
 class ModelEvaluation(ModelManager):
@@ -136,7 +145,8 @@ class ModelEvaluation(ModelManager):
 
     def get_test_predictions(self):
         test_x = self.pipeline.test_data
-        return self.ml_model.predict(test_x)
+        return self.prediction_transformer.revert_transform_predictions(
+                self.ml_model.predict(test_x))
 
     def run(self, verbose=True):
         super().run(verbose)

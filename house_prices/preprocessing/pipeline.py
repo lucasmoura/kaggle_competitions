@@ -134,3 +134,14 @@ class Finalize:
 
     def finalize_test(self, test):
         raise NotImplementedError
+
+
+class PredictionTransform:
+
+    ORDER = 6
+
+    def transform_predictions(predictions):
+        return predictions
+
+    def revert_transform_predictions(predictions):
+        return predictions
