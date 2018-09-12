@@ -1,5 +1,6 @@
 from models.base_pipeline import (BaseFillMissing, BaseTransformations,
-                                  BaseCreate, BaseDrop, BaseFinalize)
+                                  BaseCreate, BaseDrop, BaseFinalize,
+                                  BasePredictionTransform)
 
 
 class LFillMissing(BaseFillMissing):
@@ -18,5 +19,9 @@ class LDrop(BaseDrop):
     pass
 
 
-class Finalize(BaseFinalize):
+class LFinalize(BaseFinalize):
+    pass
+
+
+class LPredictionTransform(BasePredictionTransform):
     pass

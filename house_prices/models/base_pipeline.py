@@ -2,10 +2,11 @@ import numpy as np
 
 from preprocessing.create import create_column
 from preprocessing.pipeline import (Transformations, FillMissing,
-                                    Create, Drop, Finalize)
+                                    Create, Drop, Finalize, PredictionTransform)
 from preprocessing.transform import (transform_categorical_column,
                                      transform_column_into_categorical_dtype,
-                                     transform_categorical_to_one_hot)
+                                     transform_categorical_to_one_hot,
+                                     transform_to_log_scale)
 from preprocessing.missing_data import fill_nan_with_value, drop_columns
 
 
@@ -75,12 +76,12 @@ class BaseTransformations(Transformations):
         super().__init__()
 
         self.category_columns = [
-            'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
+            'MSSubClass', 'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
             'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType',
             'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd',
             'MasVnrType', 'Foundation', 'CentralAir', 'Electrical',
             'Functional', 'GarageType', 'GarageYrBlt',
-            'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive',
+            'GarageFinish', 'PavedDrive',
             'SaleType', 'SaleCondition'
         ]
 
@@ -92,7 +93,7 @@ class BaseTransformations(Transformations):
     def transform_to_ordinal(self):
         ordinal_map = {'NP': 0, 'Po': 1, 'Fa': 2, 'TA': 3, 'Gd': 4, 'Ex': 5}
         columns = ['FireplaceQu', 'BsmtQual', 'BsmtCond', 'ExterQual', 'ExterCond',
-                   'HeatingQC', 'KitchenQual']
+                   'HeatingQC', 'KitchenQual', 'GarageQual', 'GarageCond']
         self.apply_ordinal_transformation(ordinal_map, columns)
 
         ordinal_map = {'NP': 0, 'Unf': 1, 'LwQ': 2, 'Rec': 3, 'BLQ': 4, 'ALQ': 5, 'GLQ': 6}
@@ -112,12 +113,17 @@ class BaseTransformations(Transformations):
             for dataset in self.loop_datasets():
                 transform_column_into_categorical_dtype(dataset, column)
 
+    def transform_target(self):
+        for dataset in self.loop_datasets():
+            if 'SalePrice' in dataset.columns:
+                transform_to_log_scale(dataset, 'SalePrice')
+
 
 class BaseDrop(Drop):
 
     def drop_columns_from_datasets(self):
         columns = ['PoolQC', 'MiscFeature', 'Alley',
-                   'Utilities', 'Heating', 'Street', 'Id']
+                   'Utilities', 'Heating', 'Street', 'Id', 'PoolArea']
 
         for dataset in self.loop_datasets():
             drop_columns(dataset, columns)
@@ -128,13 +134,12 @@ class BaseCreate(Create):
         super().__init__()
 
         self.category_columns = [
-            'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
+            'MSSubClass', 'MSZoning', 'LotShape', 'LandContour', 'LotConfig',
             'LandSlope', 'Neighborhood', 'Condition1', 'Condition2', 'BldgType',
             'HouseStyle', 'RoofStyle', 'RoofMatl', 'Exterior1st', 'Exterior2nd',
             'MasVnrType', 'Foundation', 'CentralAir', 'Electrical',
             'Functional', 'GarageType', 'GarageYrBlt',
-            'GarageFinish', 'GarageQual', 'GarageCond', 'PavedDrive',
-            'SaleType', 'SaleCondition'
+            'GarageFinish', 'PavedDrive', 'SaleType', 'SaleCondition'
         ]
 
     def handle_missing_columns(self):
@@ -206,3 +211,12 @@ class BaseFinalize(Finalize):
 
     def finalize_test(self, test):
         return test[self.columns_order]
+
+
+class BasePredictionTransform(PredictionTransform):
+
+    def transform_predictions(predictions):
+        return predictions
+
+    def revert_transform_predictions(predictions):
+        return np.exp(predictions)

@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -22,3 +23,7 @@ def transform_categorical_to_one_hot(dataset, column):
         column = [column]
 
     return pd.get_dummies(dataset, columns=column)
+
+
+def transform_to_log_scale(dataset, column):
+    dataset.loc[:, column] = np.log(dataset[column])
