@@ -149,8 +149,9 @@ class BaseCreate(Create):
             self.handle_new_columns(train, validation)
             self.remove_additional_columns(validation, train)
 
-        self.handle_new_columns(train, test)
-        self.remove_additional_columns(test, train)
+        if test is not None:
+            self.handle_new_columns(train, test)
+            self.remove_additional_columns(test, train)
 
     def select_converted_categorical_columns(self, dataset):
         return list(dataset.select_dtypes(include=[np.uint8]).columns)

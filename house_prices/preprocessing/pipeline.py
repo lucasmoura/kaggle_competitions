@@ -41,7 +41,8 @@ class Pipeline:
         if validation is not None:
             self.validation_data = self.finalize.finalize_validation(validation)
 
-        self.test_data = self.finalize.finalize_test(test)
+        if test is not None:
+            self.test_data = self.finalize.finalize_test(test)
 
 
 class Operation:

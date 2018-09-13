@@ -1,0 +1,12 @@
+{
+  "fit_intercept":
+   {
+      "distribution": "uniform",
+      "values": [true, false]
+   },
+   "normalize":
+   {
+     "distribution": "uniform",
+     "values": [true, false]
+   }
+}
