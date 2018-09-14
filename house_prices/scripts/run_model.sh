@@ -2,8 +2,8 @@ set -e
 
 TRAIN_PATH='data/split/fold_train.csv'
 TEST_PATH='data/test.csv'
-MODEL_NAME='linear_regression'
-PIPELINE_NAME='p1'
+MODEL_NAME=$1
+PIPELINE_NAME=$2
 NUM_FOLDS=5
 CREATE_SUBMISSION=1
 

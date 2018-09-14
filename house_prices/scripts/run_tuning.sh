@@ -1,10 +1,10 @@
 set -e
 
 TRAIN_PATH='data/split/fold_train.csv'
-MODEL_NAME='linear_regression'
-PIPELINE_NAME='p1'
+MODEL_NAME=$1
+PIPELINE_NAME=$2
 NUM_FOLDS=5
-NUM_ITER=3
+NUM_ITER=30
 
 python run_tuning.py \
   --train-path=$TRAIN_PATH \
