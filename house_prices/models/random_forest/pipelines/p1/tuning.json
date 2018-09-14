@@ -1,0 +1,36 @@
+{
+    "n_estimators":
+    {
+        "distribution": "uniform",
+        "min": 29,
+        "max": 50
+    },
+    "criterion":
+    {
+        "distribution": "uniform",
+        "values": ["mse", "mae"]
+    },
+    "max_features":
+    {
+        "distribution": "uniform",
+        "values": ["auto", "sqrt", "log2"]
+    },
+    "max_depth":
+    {
+        "distribution": "uniform",
+        "min": 18,
+        "max": 25
+    },
+    "min_samples_split":
+    {
+        "distribution": "uniform",
+        "min": 5,
+        "max": 12
+    },
+    "min_samples_leaf":
+    {
+        "distribution": "uniform",
+        "min": 1,
+        "max": 2
+    }
+}
