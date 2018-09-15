@@ -17,6 +17,7 @@ class ModelManager:
         self.build_pipeline(operations)
 
         self.num_folds = num_folds
+        self.curr_folder = None
 
     def load_modules(self, model_name, pipeline_name):
         model_searcher = ModelSearcher('models')
@@ -78,12 +79,15 @@ class ModelManager:
         train_x, train_y = self.pipeline.train_data
         self.ml_model.fit(train_x, train_y)
 
+    def get_validation_predictions(self, validation_x):
+        return self.ml_model.predict(validation_x)
+
     def evaluate_model(self, verbose):
         if verbose:
             print('Evaluating model')
 
         validation_x, validation_y = self.pipeline.validation_data
-        pred = self.ml_model.predict(validation_x)
+        pred = self.get_validation_predictions(validation_x)
 
         trans_pred = self.prediction_transformer.transform_predictions(pred)
         trans_val_y = self.prediction_transformer.transform_predictions(
@@ -102,6 +106,8 @@ class ModelManager:
 
         for folder_num in range(0, self.num_folds):
             self.perform_training(folder_num, verbose)
+            self.curr_folder = folder_num
+
             model_result = self.evaluate_model(verbose)
             self.metric_values.append(model_result)
 
@@ -121,6 +127,7 @@ class ModelEvaluation(ModelManager):
 
         self.create_submission = create_submission
         self.set_model_config()
+        self.predictions = []
 
     def set_model_config(self):
         config_path = create_path(self.save_path, 'config.json')
@@ -143,8 +150,27 @@ class ModelEvaluation(ModelManager):
         return self.prediction_transformer.revert_transform_predictions(
                 self.ml_model.predict(test_x))
 
+    def get_validation_predictions(self, validation_x):
+        predictions = super().get_validation_predictions(validation_x)
+        updated_predictions = self.prediction_transformer.revert_transform_predictions(
+            predictions)
+
+        pred_list = [(self.curr_folder, pred) for pred in updated_predictions]
+        self.predictions.extend(pred_list)
+
+        return predictions
+
+    def create_stack_pred(self):
+        stack_df = pd.DataFrame.from_records(self.predictions)
+        stack_df.set_axis(['Fold', 'Prediction'], axis=1, inplace=True)
+        stack_df.to_csv(
+            create_path(self.save_path, 'stack.csv'),
+            index=False
+        )
+
     def run(self, verbose=True):
         super().run(verbose)
+        self.create_stack_pred()
 
         if verbose:
             print()
