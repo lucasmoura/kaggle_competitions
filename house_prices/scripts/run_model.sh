@@ -7,7 +7,7 @@ PIPELINE_NAME=$2
 NUM_FOLDS=5
 CREATE_SUBMISSION=1
 
-python run_model.py \
+python run.py 'model' \
   --train-path=$TRAIN_PATH \
   --test-path=$TEST_PATH \
   --model-name=$MODEL_NAME \
