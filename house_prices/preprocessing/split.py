@@ -2,6 +2,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.utils import shuffle
 
+from preprocessing.missing_data import drop_columns
+
 
 def split_data(dataset, test_size=0.2, seed=42):
     """
@@ -26,6 +28,15 @@ def prepare_kfold(dataset, num_folds, seed):
     kf.get_n_splits(dataset)
 
     return kf
+
+
+def create_target(dataset, target_column, remove_target=True):
+    target_folds = dataset[['fold', target_column]]
+
+    if remove_target:
+        drop_columns(dataset, [target_column])
+
+    return target_folds
 
 
 def create_folds(dataset, num_folds, seed=42):
