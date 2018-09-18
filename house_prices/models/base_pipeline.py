@@ -2,11 +2,11 @@ import numpy as np
 
 from preprocessing.create import create_column
 from preprocessing.pipeline import (Transformations, FillMissing,
-                                    Create, Drop, Finalize, PredictionTransform)
+                                    Create, Drop, TargetTransform,
+                                    Finalize, PredictionTransform)
 from preprocessing.transform import (transform_categorical_column,
                                      transform_column_into_categorical_dtype,
-                                     transform_categorical_to_one_hot,
-                                     transform_to_log_scale)
+                                     transform_categorical_to_one_hot)
 from preprocessing.missing_data import fill_nan_with_value, drop_columns
 
 
@@ -113,11 +113,6 @@ class BaseTransformations(Transformations):
             for dataset in self.loop_datasets():
                 transform_column_into_categorical_dtype(dataset, column)
 
-    def transform_target(self):
-        for dataset in self.loop_datasets():
-            if 'SalePrice' in dataset.columns:
-                transform_to_log_scale(dataset, 'SalePrice')
-
 
 class BaseDrop(Drop):
 
@@ -188,17 +183,21 @@ class BaseCreate(Create):
         self.handle_missing_columns()
 
 
+class BaseTargetTransform(TargetTransform):
+
+    def transform_target(dataset):
+        return np.log(dataset)
+
+
 class BaseFinalize(Finalize):
 
     def create_supervised_dataset(self, dataset):
-        y = dataset['SalePrice']
         X = dataset[self.columns_order]
 
-        return X, y
+        return X
 
     def set_column_order(self, train):
         train_columns = train.columns.tolist()
-        train_columns.remove('SalePrice')
         train_columns.remove('fold')
 
         self.columns_order = train_columns

@@ -1,6 +1,7 @@
 set -e
 
 TRAIN_PATH='data/split/fold_train.csv'
+TARGET_PATH='data/split/fold_target.csv'
 TEST_PATH='data/test.csv'
 MODEL_NAME=$1
 PIPELINE_NAME=$2
@@ -10,6 +11,7 @@ USE_STACKING=1
 
 python run.py 'model' \
   --train-path=$TRAIN_PATH \
+  --target-path=$TARGET_PATH \
   --test-path=$TEST_PATH \
   --model-name=$MODEL_NAME \
   --pipeline-name=$PIPELINE_NAME \

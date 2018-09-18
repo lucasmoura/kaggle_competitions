@@ -1,7 +1,9 @@
 import numpy as np
 
 from models.base_pipeline import (BaseFillMissing, BaseTransformations,
-                                  BaseCreate, BaseDrop, BaseFinalize,
+                                  BaseCreate, BaseDrop,
+                                  BaseTargetTransform,
+                                  BaseFinalize,
                                   BasePredictionTransform)
 
 
@@ -20,6 +22,11 @@ class RFCreate(BaseCreate):
 
 class RFDrop(BaseDrop):
     pass
+
+
+class RFTargetTransform(BaseTargetTransform):
+    def transform_target(dataset):
+        return dataset
 
 
 class RFFinalize(BaseFinalize):

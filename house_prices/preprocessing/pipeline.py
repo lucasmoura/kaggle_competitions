@@ -120,9 +120,17 @@ class Drop(Operation):
         self.name = 'Drop'
 
 
-class Finalize:
+class TargetTransform:
 
     ORDER = 5
+
+    def transform_target(dataset):
+        raise NotImplementedError
+
+
+class Finalize:
+
+    ORDER = 6
 
     def __init__(self):
         self.name = 'Finalize'
@@ -139,7 +147,7 @@ class Finalize:
 
 class PredictionTransform:
 
-    ORDER = 6
+    ORDER = 7
 
     def transform_predictions(predictions):
         return predictions
