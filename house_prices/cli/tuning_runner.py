@@ -4,6 +4,7 @@ from preprocessing.load import load_dataset
 
 def tuning_runner(args):
     train = load_dataset(args['train_path'])
+    target = load_dataset(args['target_path'])
 
     model_name = args['model_name']
     pipeline_name = args['pipeline_name']
@@ -11,7 +12,7 @@ def tuning_runner(args):
     num_iter = args['num_iter']
 
     model_tuning = ModelTuning(
-        train, model_name, pipeline_name, num_folds, num_iter)
+        train, target, model_name, pipeline_name, num_folds, num_iter)
 
     model_tuning.run()
 

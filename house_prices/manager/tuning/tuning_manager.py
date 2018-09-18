@@ -8,8 +8,8 @@ from utils.json import save_json
 
 class ModelTuning(ModelManager):
 
-    def __init__(self, train, model_name, pipeline_name, num_folds, num_iter):
-        super().__init__(train, None, model_name, pipeline_name, num_folds)
+    def __init__(self, train, target, model_name, pipeline_name, num_folds, num_iter):
+        super().__init__(train, target, None, model_name, pipeline_name, num_folds)
 
         self.num_iter = num_iter
 

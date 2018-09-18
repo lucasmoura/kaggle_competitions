@@ -28,12 +28,6 @@ def create_model_parser(subparser, parent):
     parse_model = subparser.add_parser('model', parents=[parent])
 
     parse_model.add_argument(
-        '-tgp',
-        '--target-path',
-        type=str,
-        help='Location of the target data')
-
-    parse_model.add_argument(
         '-tsp',
         '--test-path',
         type=str,

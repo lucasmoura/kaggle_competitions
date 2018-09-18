@@ -16,6 +16,13 @@ def create_parser():
     )
 
     parser.add_argument(
+        '-tgp',
+        '--target-path',
+        type=str,
+        help='Location of the target path'
+    )
+
+    parser.add_argument(
         '-mn',
         '--model-name',
         type=str,
