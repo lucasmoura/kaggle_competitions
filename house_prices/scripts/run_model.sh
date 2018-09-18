@@ -6,6 +6,7 @@ MODEL_NAME=$1
 PIPELINE_NAME=$2
 NUM_FOLDS=5
 CREATE_SUBMISSION=1
+USE_STACKING=1
 
 python run.py 'model' \
   --train-path=$TRAIN_PATH \
@@ -13,4 +14,5 @@ python run.py 'model' \
   --model-name=$MODEL_NAME \
   --pipeline-name=$PIPELINE_NAME \
   --num-folds=$NUM_FOLDS \
-  --create-submission=$CREATE_SUBMISSION
+  --create-submission=$CREATE_SUBMISSION \
+  --use-stacking=$USE_STACKING
