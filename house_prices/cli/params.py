@@ -2,6 +2,7 @@ import argparse
 
 from cli.model_runner import create_model_parser
 from cli.tuning_runner import create_tuning_parser
+from cli.split_runner import create_split_parser
 
 
 def create_parser():
@@ -48,5 +49,6 @@ def get_parser():
 
     create_tuning_parser(subparser, parser)
     create_model_parser(subparser, parser)
+    create_split_parser(subparser)
 
     return parser
