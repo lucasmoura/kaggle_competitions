@@ -1,15 +1,25 @@
 from sklearn.model_selection import ParameterSampler
 
-from manager.model_manager import ModelManager
+from manager.model_manager import ModelEvaluation
 from manager.tuning.parser import TuningParser
 from utils.path import create_path
 from utils.json import save_json
 
 
-class ModelTuning(ModelManager):
+class ModelTuning(ModelEvaluation):
 
     def __init__(self, train, target, model_name, pipeline_name, num_folds, num_iter):
-        super().__init__(train, target, None, model_name, pipeline_name, num_folds)
+        super().__init__(
+            train=train,
+            target=target,
+            test=None,
+            model_name=model_name,
+            pipeline_name=pipeline_name,
+            num_folds=num_folds,
+            create_submission=False,
+            id_column=None,
+            target_column=None
+        )
 
         self.num_iter = num_iter
 
@@ -52,4 +62,4 @@ class ModelTuning(ModelManager):
         if verbose:
             print('Best metric value found: {}'.format(best_metric_value))
 
-        self.save_best_config(best_config)
+            self.save_best_config(best_config)

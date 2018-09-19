@@ -1,20 +1,25 @@
 import numpy as np
-import pandas as pd
 
 from manager.search_model import ModelSearcher, PipelineSearcher, MetricSearcher
+from manager.submission import generate_submission
 from preprocessing.pipeline import Pipeline
 from utils.json import load_json
 from utils.path import create_path
 
 
 class ModelRunner:
-    def __init__(self, model_name, train, target):
+    def __init__(self, model_name, train, target, test, num_folds, **kwargs):
         model, self.model_path = self.load_model(model_name)
         metric = self.load_metric()
 
-        self.train, self.target = train, target
+        self.train, self.target, self.test = train, target, test
+        self.num_folds = num_folds
+        self.curr_folder = None
+        self.model_name = model_name
 
         self.build_model(model, metric)
+
+        super().__init__(**kwargs)
 
     def load_metric(self):
         return MetricSearcher('models').get_class('metric')
@@ -22,6 +27,12 @@ class ModelRunner:
     def load_model(self, model_name):
         model_searcher = ModelSearcher('models')
         return model_searcher.get_class(model_name), model_searcher.path
+
+    def extract_test_set(self):
+        if self.test is not None:
+            return self.test.copy()
+
+        return None
 
     def extract_validation_set(self, column_name='fold'):
         train_data = self.train.copy()
@@ -55,6 +66,9 @@ class ModelRunner:
     def apply_target_transformations(self, target):
         raise NotImplementedError
 
+    def extract_train_set(self):
+        raise NotImplementedError
+
     def get_validation_predictions(self, validation_x):
         return self.ml_model.predict(validation_x)
 
@@ -81,7 +95,7 @@ class ModelRunner:
         if verbose:
             print('Training model')
 
-        train_x = self.pipeline.train_data
+        train_x = self.extract_train_set()
         train_y = self.extract_target_set().values.ravel()
 
         self.ml_model.fit(train_x, train_y)
@@ -105,27 +119,25 @@ class ModelRunner:
         return mean_metric
 
 
-class ModelManager(ModelRunner):
+class PipelineManager:
 
-    def __init__(self, train, target, test, model_name, pipeline_name, num_folds):
-        super().__init__(model_name, train, target)
+    def __init__(self, pipeline_name, **kwargs):
+        super().__init__(**kwargs)
+        self.pipeline_name = pipeline_name
 
-        self.test = test
-        operations, self.save_path = self.load_pipeline(pipeline_name)
-
-        self.model_name = model_name
-        self.build_pipeline(operations)
-
-        self.num_folds = num_folds
-        self.curr_folder = None
-
-    def load_pipeline(self, pipeline_name):
-        pipeline_searcher = PipelineSearcher(self.model_path)
-        operations = pipeline_searcher.get_class(pipeline_name)
+    def load_pipeline(self, model_path):
+        pipeline_searcher = PipelineSearcher(model_path)
+        operations = pipeline_searcher.get_class(self.pipeline_name)
         return operations, pipeline_searcher.path
 
-    def build_pipeline(self, operations):
+    def get_operations(self, model_path):
+        operations, self.save_path = self.load_pipeline(model_path)
+
+        return operations
+
+    def build_pipeline(self, model_path):
         self.pipeline = Pipeline()
+        operations = self.get_operations(model_path)
 
         (*pipeline_ops, self.target_transform,
          finalize, self.pred_transformer) = operations
@@ -133,16 +145,7 @@ class ModelManager(ModelRunner):
         self.pipeline.set_operations(*pipeline_ops)
         self.pipeline.set_finalize(finalize)
 
-    def get_test(self):
-        if self.test is not None:
-            return self.test.copy()
-
-        return None
-
-    def set_pipeline(self):
-        train, validation = self.extract_validation_set()
-        test = self.get_test()
-
+    def set_pipeline(self, train, validation, test):
         self.pipeline.set_dataset(train, validation, test)
 
     def run_pipeline(self, verbose):
@@ -151,6 +154,27 @@ class ModelManager(ModelRunner):
 
         self.pipeline.run_pipeline(verbose)
 
+
+class ModelEvaluation(PipelineManager, ModelRunner):
+    def __init__(self, train, target, test, model_name, pipeline_name,
+                 num_folds, create_submission, id_column, target_column):
+
+        super().__init__(
+            train=train,
+            target=target,
+            test=test,
+            model_name=model_name,
+            pipeline_name=pipeline_name,
+            num_folds=num_folds)
+
+        self.create_submission = create_submission
+        self.id_column = id_column
+        self.target_column = target_column
+
+        self.build_pipeline(self.model_path)
+        self.set_model_config()
+        self.predictions = []
+
     def apply_target_transformations(self, target):
         return self.target_transform.transform_target(target)
 
@@ -158,21 +182,8 @@ class ModelManager(ModelRunner):
         return self.pred_transformer.transform_predictions(
             predictions)
 
-    def perform_training(self, verbose=True):
-        self.set_pipeline()
-        self.run_pipeline(verbose)
-
-        super().perform_training(verbose)
-
-
-class ModelEvaluation(ModelManager):
-    def __init__(self, train, target, test, model_name, pipeline_name,
-                 num_folds, create_submission):
-        super().__init__(train, target, test, model_name, pipeline_name, num_folds)
-
-        self.create_submission = create_submission
-        self.set_model_config()
-        self.predictions = []
+    def extract_train_set(self):
+        return self.pipeline.train_data
 
     def set_model_config(self):
         config_path = create_path(self.save_path, 'config.json')
@@ -180,23 +191,22 @@ class ModelEvaluation(ModelManager):
 
         self.ml_model.set_config(config)
 
-    def generate_submission(self, predictions, verbose):
-        if verbose:
-            print('Creating submission')
-
-        submission_df = pd.DataFrame({'Id': self.test.Id, 'SalePrice': predictions})
-        submission_df.to_csv(
-            create_path(self.save_path, 'submission.csv'),
-            index=False
-        )
-
     def get_test_predictions(self):
         test_x = self.pipeline.test_data
         return self.pred_transformer.revert_transform_predictions(
                 self.ml_model.predict(test_x))
 
+    def perform_training(self, verbose=True):
+        train, validation = self.extract_validation_set()
+        test = self.extract_test_set()
+
+        self.set_pipeline(train, validation, test)
+        self.run_pipeline(verbose)
+
+        super().perform_training(verbose)
+
     def run(self, verbose=True):
-        super().run(verbose)
+        metric_result = super().run(verbose)
 
         if verbose:
             print()
@@ -208,4 +218,10 @@ class ModelEvaluation(ModelManager):
             self.curr_folder = -1
             self.perform_training(verbose=verbose)
             predictions = self.get_test_predictions()
-            self.generate_submission(predictions, verbose)
+
+            generate_submission(
+                predictions, self.id_column, self.target_column,
+                self.test[self.id_column], self.save_path
+            )
+
+        return metric_result

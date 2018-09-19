@@ -8,6 +8,8 @@ PIPELINE_NAME=$2
 NUM_FOLDS=5
 CREATE_SUBMISSION=1
 USE_STACKING=1
+ID_COLUMN='Id'
+TARGET_COLUMN='SalePrice'
 
 python run.py 'model' \
   --train-path=$TRAIN_PATH \
@@ -17,4 +19,6 @@ python run.py 'model' \
   --pipeline-name=$PIPELINE_NAME \
   --num-folds=$NUM_FOLDS \
   --create-submission=$CREATE_SUBMISSION \
-  --use-stacking=$USE_STACKING
+  --use-stacking=$USE_STACKING \
+  --id-column=$ID_COLUMN \
+  --target-column=$TARGET_COLUMN

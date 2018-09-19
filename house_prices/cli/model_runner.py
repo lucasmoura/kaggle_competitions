@@ -14,18 +14,25 @@ def model_runner(args):
     create_submission = args['create_submission']
     use_stacking = args['use_stacking']
 
+    id_column = args['id_column']
+    target_column = args['target_column']
+
     model = StackingModel if use_stacking else ModelEvaluation
 
     model_evaluation = model(
         train, target, test, model_name,
-        pipeline_name, num_folds, create_submission
+        pipeline_name, num_folds, create_submission,
+        id_column, target_column
     )
 
     model_evaluation.run()
 
 
-def create_model_parser(subparser, parent):
-    parse_model = subparser.add_parser('model', parents=[parent])
+def create_model_parser(subparser, base_parser,
+                        model_info_parser, submission_parser):
+    parse_model = subparser.add_parser(
+        'model', parents=[base_parser, model_info_parser, submission_parser]
+    )
 
     parse_model.add_argument(
         '-tsp',

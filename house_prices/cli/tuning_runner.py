@@ -17,8 +17,9 @@ def tuning_runner(args):
     model_tuning.run()
 
 
-def create_tuning_parser(subparser, parent):
-    parse_tuning = subparser.add_parser('tuning', parents=[parent])
+def create_tuning_parser(subparser, base_parser, model_info_parser):
+    parse_tuning = subparser.add_parser(
+        'tuning', parents=[base_parser, model_info_parser])
 
     parse_tuning.add_argument(
         '-ni',
