@@ -34,7 +34,7 @@ class ModelRunner:
 
         return None
 
-    def extract_validation_set(self, column_name='fold'):
+    def parse_train_set(self, column_name='fold'):
         train_data = self.train.copy()
 
         if self.curr_folder == -1:
@@ -69,6 +69,9 @@ class ModelRunner:
     def extract_train_set(self):
         raise NotImplementedError
 
+    def extract_validation_set(self):
+        raise NotImplementedError
+
     def get_validation_predictions(self, validation_x):
         return self.ml_model.predict(validation_x)
 
@@ -81,7 +84,7 @@ class ModelRunner:
         if verbose:
             print('Evaluating model')
 
-        validation_x = self.pipeline.validation_data
+        validation_x = self.extract_validation_set()
         validation_y = self.extract_target_set(train=False).values.ravel()
         pred = self.get_validation_predictions(validation_x)
 
@@ -185,6 +188,9 @@ class ModelEvaluation(PipelineManager, ModelRunner):
     def extract_train_set(self):
         return self.pipeline.train_data
 
+    def extract_validation_set(self):
+        return self.pipeline.validation_data
+
     def set_model_config(self):
         config_path = create_path(self.save_path, 'config.json')
         config = load_json(config_path)
@@ -197,13 +203,19 @@ class ModelEvaluation(PipelineManager, ModelRunner):
                 self.ml_model.predict(test_x))
 
     def perform_training(self, verbose=True):
-        train, validation = self.extract_validation_set()
+        train, validation = self.parse_train_set()
         test = self.extract_test_set()
 
         self.set_pipeline(train, validation, test)
         self.run_pipeline(verbose)
 
         super().perform_training(verbose)
+
+    def save_submission(self, predictions):
+        generate_submission(
+            predictions, self.id_column, self.target_column,
+            self.test[self.id_column], self.save_path
+        )
 
     def run(self, verbose=True):
         metric_result = super().run(verbose)
@@ -218,10 +230,6 @@ class ModelEvaluation(PipelineManager, ModelRunner):
             self.curr_folder = -1
             self.perform_training(verbose=verbose)
             predictions = self.get_test_predictions()
-
-            generate_submission(
-                predictions, self.id_column, self.target_column,
-                self.test[self.id_column], self.save_path
-            )
+            self.save_submission(predictions)
 
         return metric_result
