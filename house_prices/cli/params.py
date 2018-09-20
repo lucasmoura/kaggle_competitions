@@ -4,6 +4,7 @@ from cli.model_runner import create_model_parser
 from cli.tuning_runner import create_tuning_parser
 from cli.split_runner import create_split_parser
 from cli.stacking_runner import create_stacking_runner
+from cli.new_model_runner import create_new_model_parser
 
 
 def create_base_parser():
@@ -87,5 +88,6 @@ def get_parser():
         subparser, base_parser, model_info_parser, submission_parser)
     create_split_parser(subparser)
     create_stacking_runner(subparser, base_parser, submission_parser)
+    create_new_model_parser(subparser, model_info_parser)
 
     return base_parser
