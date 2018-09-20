@@ -17,7 +17,7 @@ def create_init_files(model_path, pipeline_name_path):
     file_name = '__init__.py'
 
     create_file(model_path, file_name)
-    create_file(model_path, file_name)
+    create_file(pipeline_name_path, file_name)
 
 
 def create_model_class_name(model_name):
