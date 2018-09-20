@@ -2,6 +2,7 @@ kaggle
 tensorflow-gpu==1.4.1
 pandas
 sklearn
+xgboost
 flake8
 ipython
 ipdb
