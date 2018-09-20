@@ -72,6 +72,8 @@ class StackingEvaluation(ModelRunner):
         self.id_column = id_column
         self.target_column = target_column
 
+        self.set_model_config(self.model_path)
+
     def extract_set(self, dataset, column_name):
         return dataset.loc[:, ~(dataset.columns == column_name)]
 

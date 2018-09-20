@@ -28,6 +28,12 @@ class ModelRunner:
         model_searcher = ModelSearcher('models')
         return model_searcher.get_class(model_name), model_searcher.path
 
+    def set_model_config(self, config_folder):
+        config_path = create_path(config_folder, 'config.json')
+        config = load_json(config_path)
+
+        self.ml_model.set_config(config)
+
     def extract_test_set(self):
         if self.test is not None:
             return self.test.copy()
@@ -175,7 +181,7 @@ class ModelEvaluation(PipelineManager, ModelRunner):
         self.target_column = target_column
 
         self.build_pipeline(self.model_path)
-        self.set_model_config()
+        self.set_model_config(self.save_path)
         self.predictions = []
 
     def apply_target_transformations(self, target):
@@ -190,12 +196,6 @@ class ModelEvaluation(PipelineManager, ModelRunner):
 
     def extract_validation_set(self):
         return self.pipeline.validation_data
-
-    def set_model_config(self):
-        config_path = create_path(self.save_path, 'config.json')
-        config = load_json(config_path)
-
-        self.ml_model.set_config(config)
 
     def get_test_predictions(self):
         test_x = self.pipeline.test_data

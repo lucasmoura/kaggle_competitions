@@ -1,0 +1,5 @@
+{
+  "fit_intercept": false,
+  "normalize": false,
+  "n_jobs": -1
+}
