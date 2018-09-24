@@ -30,7 +30,9 @@ class RFDrop(BaseDrop):
     def __init__(self):
         super().__init__()
 
-        self.drop_columns.append('GarageYrBlt')
+        self.drop_columns.extend([
+            'GarageYrBlt', 'TotRmsAbvGrd'
+        ])
 
 
 class RFTargetTransform(BaseTargetTransform):
