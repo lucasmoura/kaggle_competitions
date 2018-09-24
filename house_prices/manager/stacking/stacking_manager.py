@@ -1,9 +1,9 @@
 import pandas as pd
-import numpy as np
 
 from manager.model_manager import ModelEvaluation, ModelRunner
 from manager.submission import generate_submission
 from preprocessing.load import load_dataset
+from manager.search_model import StackingSearcher
 from utils.path import create_path
 from utils.json import load_json
 
@@ -74,23 +74,32 @@ class StackingEvaluation(ModelRunner):
 
         self.set_model_config(self.model_path)
 
+        self.stack_transformer = self.load_stacking_transformation()
+
+    def load_stacking_transformation(self):
+        searcher = StackingSearcher('models')
+        return searcher.get_class('stacking')
+
     def extract_set(self, dataset, column_name):
         return dataset.loc[:, ~(dataset.columns == column_name)]
 
     def extract_train_set(self):
-        return self.extract_set(self.train_data, 'Fold')
+        train_data = self.extract_set(self.train_data, 'Fold')
+        return self.stack_transformer.transform(train_data)
 
     def extract_validation_set(self):
-        return self.extract_set(self.validation_data, 'Fold')
+        validation_data = self.extract_set(self.validation_data, 'Fold')
+        return self.stack_transformer.transform(validation_data)
 
     def extract_test_set(self):
-        return self.extract_set(self.test, self.id_column)
+        test_data = self.extract_set(self.test, self.id_column)
+        return self.stack_transformer.transform(test_data)
 
     def apply_target_transformations(self, target):
-        return target
+        return self.stack_transformer.transform(target)
 
     def apply_prediction_transformations(self, predictions):
-        return np.log(predictions)
+        return self.stack_transformer.prediction_transform(predictions)
 
     def perform_training(self, verbose=True):
         self.train_data, self.validation_data = self.parse_train_set(
@@ -129,7 +138,8 @@ class StackingEvaluation(ModelRunner):
 
     def get_test_predictions(self):
         test_x = self.extract_test_set()
-        return self.ml_model.predict(test_x)
+        return self.stack_transformer.revert(
+            self.ml_model.predict(test_x))
 
     def run(self, verbose=True):
         super().run()

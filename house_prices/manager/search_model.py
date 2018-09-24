@@ -12,6 +12,7 @@ class ClassSearcher:
         self.folder_to_look = folder_to_look
         self.path = None
         self.is_pkg = is_pkg
+        self.default_model = None
 
     def iterate_over_module(self, path):
         if type(path) != list:
@@ -91,3 +92,9 @@ class MetricSearcher(ModelSearcher):
 
     def create_module_path(self, module_path):
         return module_path
+
+
+class StackingSearcher(ModelSearcher):
+    def __init__(self, folder_to_look):
+        super().__init__(folder_to_look)
+        self.default_module = 'transform'
