@@ -6,7 +6,8 @@ from preprocessing.pipeline import (Transformations, FillMissing,
                                     Finalize, PredictionTransform)
 from preprocessing.transform import (transform_categorical_column,
                                      transform_column_into_categorical_dtype,
-                                     transform_categorical_to_one_hot)
+                                     transform_categorical_to_one_hot,
+                                     transform_to_log1_scale)
 from preprocessing.missing_data import fill_nan_with_value, drop_columns
 
 
@@ -85,6 +86,14 @@ class BaseTransformations(Transformations):
             'SaleType', 'SaleCondition'
         ]
 
+        self.numeric_columns = [
+            'LotFrontage', 'LotArea', 'MasVnrArea',
+            'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF',
+            '2ndFlrSF', 'LowQualFinSF', 'GrLivArea',
+            'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch',
+            '3SsnPorch', 'ScreenPorch'
+        ]
+
     def apply_ordinal_transformation(self, ordinal_map, columns):
         for column in columns:
             for dataset in self.loop_datasets():
@@ -112,6 +121,11 @@ class BaseTransformations(Transformations):
         for column in self.category_columns:
             for dataset in self.loop_datasets():
                 transform_column_into_categorical_dtype(dataset, column)
+
+    def transform_numeric_data(self):
+        for column in self.numeric_columns:
+            for dataset in self.loop_datasets():
+                transform_to_log1_scale(dataset, column)
 
 
 class BaseDrop(Drop):
