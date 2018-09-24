@@ -1,0 +1,23 @@
+{
+    "alpha":
+    {
+        "distribution": "uniform",
+        "min": 0,
+        "max": 100
+    },
+    "fit_intercept":
+    {
+        "distribution": "uniform",
+        "values": [true, false]
+    },
+    "normalize":
+    {
+        "distribution": "uniform",
+        "values": [true, false]
+    },
+    "solver":
+    {
+        "distribution": "uniform",
+        "values": ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"]
+    }
+}

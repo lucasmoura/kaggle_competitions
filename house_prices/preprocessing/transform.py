@@ -27,3 +27,7 @@ def transform_categorical_to_one_hot(dataset, column):
 
 def transform_to_log_scale(dataset, column):
     dataset.loc[:, column] = np.log(dataset[column])
+
+
+def transform_to_log1_scale(dataset, column):
+    dataset.loc[:, column] = np.log1p(dataset[column])
