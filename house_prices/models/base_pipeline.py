@@ -130,12 +130,18 @@ class BaseTransformations(Transformations):
 
 class BaseDrop(Drop):
 
-    def drop_columns_from_datasets(self):
-        columns = ['PoolQC', 'MiscFeature', 'Alley',
-                   'Utilities', 'Heating', 'Street', 'Id', 'PoolArea']
+    def __init__(self):
+        self.drop_columns = [
+            'PoolQC', 'MiscFeature', 'Alley',
+            'Utilities', 'Heating', 'Street',
+            'Id', 'PoolArea', 'GarageArea', '1stFlrSF'
+        ]
 
+        super().__init__()
+
+    def drop_columns_from_datasets(self):
         for dataset in self.loop_datasets():
-            drop_columns(dataset, columns)
+            drop_columns(dataset, self.drop_columns)
 
 
 class BaseCreate(Create):
