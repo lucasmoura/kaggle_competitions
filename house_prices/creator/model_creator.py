@@ -13,11 +13,9 @@ def create_file(path, file_name):
     open(os.path.join(path, file_name), 'w').close()
 
 
-def create_init_files(model_path, pipeline_name_path):
+def create_init_file(path):
     file_name = '__init__.py'
-
-    create_file(model_path, file_name)
-    create_file(pipeline_name_path, file_name)
+    create_file(path, file_name)
 
 
 def create_model_class_name(model_name):
@@ -105,15 +103,23 @@ def create_config_file(pipeline_name_path):
     create_file(pipeline_name_path, 'config.json')
 
 
-def create_model(folder, model_name, pipeline_name):
-    model_path = os.path.join(folder, model_name)
+def create_pipeline(model_name, pipeline_name, model_path):
     pipelines_path = os.path.join(model_path, 'pipelines')
     pipeline_name_path = os.path.join(pipelines_path, pipeline_name)
 
-    create_folders(model_path, pipelines_path, pipeline_name_path)
-    create_init_files(model_path, pipeline_name_path)
-    create_model_file(model_path, model_name)
-    create_pipeline_file(pipeline_name_path, model_name)
+    create_folder(pipelines_path)
+    create_folder(pipeline_name_path)
 
+    create_init_file(pipeline_name_path)
+    create_pipeline_file(pipeline_name_path, model_name)
     create_tuning_file(pipeline_name_path)
     create_config_file(pipeline_name_path)
+
+
+def create_model(folder, model_name, pipeline_name):
+    model_path = os.path.join(folder, model_name)
+
+    create_folder(model_path)
+    create_init_file(model_path)
+    create_model_file(model_path, model_name)
+    create_pipeline(model_name, pipeline_name, model_path)
