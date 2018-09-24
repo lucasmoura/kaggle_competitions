@@ -91,7 +91,7 @@ class BaseTransformations(Transformations):
             'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF',
             '2ndFlrSF', 'LowQualFinSF', 'GrLivArea',
             'WoodDeckSF', 'OpenPorchSF', 'EnclosedPorch',
-            '3SsnPorch', 'ScreenPorch'
+            '3SsnPorch', 'ScreenPorch', 'BsmtFinSF1', 'BsmtFinSF2'
         ]
 
     def apply_ordinal_transformation(self, ordinal_map, columns):
