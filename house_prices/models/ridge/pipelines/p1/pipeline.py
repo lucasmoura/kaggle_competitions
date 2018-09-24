@@ -12,11 +12,16 @@ class RTransformations(BaseTransformations):
 
 
 class RCreate(BaseCreate):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.category_columns.remove('GarageYrBlt')
 
 
 class RDrop(BaseDrop):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        self.drop_columns.append('GarageYrBlt')
 
 
 class RTargetTransform(BaseTargetTransform):

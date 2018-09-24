@@ -17,11 +17,18 @@ class RFTransformations(BaseTransformations):
 
 
 class RFCreate(BaseCreate):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.category_columns.remove('GarageYrBlt')
 
 
 class RFDrop(BaseDrop):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        self.drop_columns.extend([
+            'GarageYrBlt', 'TotRmsAbvGrd'
+        ])
 
 
 class RFTargetTransform(BaseTargetTransform):

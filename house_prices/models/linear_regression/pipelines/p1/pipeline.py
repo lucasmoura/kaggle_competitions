@@ -12,11 +12,18 @@ class LTransformations(BaseTransformations):
 
 
 class LCreate(BaseCreate):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.category_columns.remove('GarageYrBlt')
 
 
 class LDrop(BaseDrop):
-    pass
+    def __init__(self):
+        super().__init__()
+
+        self.drop_columns.extend([
+            'GarageYrBlt', 'TotRmsAbvGrd'
+        ])
 
 
 class LTargetTransform(BaseTargetTransform):

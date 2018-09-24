@@ -1,1 +1,0 @@
-{"criterion": "mse", "max_depth": 21, "max_features": "auto", "min_samples_leaf": 1, "min_samples_split": 5, "n_estimators": 47}
