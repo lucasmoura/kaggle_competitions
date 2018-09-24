@@ -26,9 +26,12 @@ class StackingModel(ModelEvaluation):
 
         self.predictions = []
 
+    def generate_prediction_column_name(self, name):
+        return name + self.model_name + '_' + self.pipeline_name
+
     def create_stack_pred(self):
         stack_df = pd.DataFrame.from_records(self.predictions)
-        prediction_column = 'Prediction_' + self.model_name
+        prediction_column = self.generate_prediction_column_name('Prediction')
         stack_df.set_axis(['Fold', prediction_column], axis=1, inplace=True)
         stack_df.to_csv(
             create_path(self.save_path, 'stack.csv'),
@@ -46,7 +49,8 @@ class StackingModel(ModelEvaluation):
         return predictions
 
     def save_submission(self, predictions):
-        self.target_column = self.target_column + '_' + self.model_name
+        self.target_column = self.generate_prediction_column_name(
+            self.target_column)
         super().save_submission(predictions)
 
     def run(self, verbose=True):
