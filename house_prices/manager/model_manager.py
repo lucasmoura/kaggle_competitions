@@ -124,6 +124,7 @@ class ModelRunner:
 
         mean_metric = np.mean(self.metric_values)
         print('Mean metric value: {}'.format(mean_metric))
+        print('Std metric value: {}'.format(np.std(self.metric_values)))
 
         return mean_metric
 
