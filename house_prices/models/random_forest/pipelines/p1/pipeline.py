@@ -20,6 +20,7 @@ class RFCreate(BaseCreate):
     def __init__(self):
         super().__init__()
         self.category_columns.remove('GarageYrBlt')
+        self.category_columns.append('MoSold')
 
 
 class RFDrop(BaseDrop):
