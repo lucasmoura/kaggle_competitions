@@ -1,0 +1,27 @@
+{
+    "fit_intercept":
+    {
+        "distribution": "uniform",
+        "values": [true, false]
+    },
+    "normalize":
+    {
+        "distribution": "uniform",
+        "values": [false, true]
+    },
+    "alpha":
+    {
+        "distribution": "uniform",
+        "values": [0.001, 0.005, 0.01, 0.1, 1, 10, 100]
+    },
+    "max_iter":
+    {
+        "distribution": "uniform",
+        "values": [80, 90, 100, 110]
+    },
+    "positive":
+    {
+        "distribution": "uniform",
+        "values": [false, true]
+    }
+}
