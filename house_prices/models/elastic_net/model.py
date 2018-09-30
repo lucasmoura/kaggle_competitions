@@ -16,4 +16,3 @@ class ElasticNetModel(Model):
 
     def predict(self, test_x):
         return self.elastic_net.predict(test_x)
-    

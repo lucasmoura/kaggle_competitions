@@ -1,5 +1,3 @@
-import numpy as np
-
 from models.base_pipeline import (BaseFillMissing, BaseTransformations,
                                   BaseCreate, BaseDrop, BaseTargetTransform,
                                   BaseFinalize, BasePredictionTransform)
@@ -18,11 +16,9 @@ class RCreate(BaseCreate):
         super().__init__()
         self.category_columns.remove('GarageYrBlt')
 
-
     def create_age_at_selling_point(self):
         for dataset in self.loop_datasets():
             dataset['age_selling_point'] = dataset['YrSold'] - dataset['YearBuilt']
-
 
     def create_time_since_remodelled(self):
         for dataset in self.loop_datasets():
