@@ -26,7 +26,7 @@ def create_model_file(model_path, model_name):
     model_name = create_model_class_name(model_name)
 
     model_file = """
-from manager.base_model import Model
+from kaggleflow.manager.base_model import Model
 
 class {}(Model):
 
