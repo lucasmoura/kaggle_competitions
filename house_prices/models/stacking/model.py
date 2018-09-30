@@ -1,4 +1,4 @@
-from models.linear_regression.model import LinearRegression
+from kaggleflow.models.linear_regression.model import LinearRegression
 
 
 class StackingModel(LinearRegression):

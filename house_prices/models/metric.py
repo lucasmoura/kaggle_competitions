@@ -2,7 +2,7 @@ from math import sqrt
 
 from sklearn.metrics import mean_squared_error
 
-from manager.base_metric import Metric
+from kaggleflow.manager.base_metric import Metric
 
 
 class HouseMetric(Metric):

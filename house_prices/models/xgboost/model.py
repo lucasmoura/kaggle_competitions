@@ -1,5 +1,6 @@
 from xgboost import XGBRegressor
-from manager.base_model import Model
+
+from kaggleflow.manager.base_model import Model
 
 
 class XGBoostRegressor(Model):

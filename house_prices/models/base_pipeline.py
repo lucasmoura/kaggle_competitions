@@ -1,14 +1,14 @@
 import numpy as np
 
-from preprocessing.create import create_column
-from preprocessing.pipeline import (Transformations, FillMissing,
-                                    Create, Drop, TargetTransform,
-                                    Finalize, PredictionTransform)
-from preprocessing.transform import (transform_categorical_column,
-                                     transform_column_into_categorical_dtype,
-                                     transform_categorical_to_one_hot,
-                                     transform_to_log1_scale)
-from preprocessing.missing_data import fill_nan_with_value, drop_columns
+from kaggleflow.preprocessing.create import create_column
+from kaggleflow.preprocessing.pipeline import (Transformations, FillMissing,
+                                               Create, Drop, TargetTransform,
+                                               Finalize, PredictionTransform)
+from kaggleflow.preprocessing.transform import (transform_categorical_column,
+                                                transform_column_into_categorical_dtype,
+                                                transform_categorical_to_one_hot,
+                                                transform_to_log1_scale)
+from kaggleflow.preprocessing.missing_data import fill_nan_with_value, drop_columns
 
 
 class BaseFillMissing(FillMissing):

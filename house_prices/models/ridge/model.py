@@ -1,6 +1,6 @@
 from sklearn.linear_model import Ridge as RidgeLR
 
-from manager.base_model import Model
+from kaggleflow.manager.base_model import Model
 
 
 class Ridge(Model):

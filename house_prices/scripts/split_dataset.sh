@@ -1,13 +1,13 @@
 set -e
 
-DATASET_PATH='data/train.csv'
+DATASET_PATH='data/outlier/train.csv'
 NUM_FOLDS=5
 SAVE_FOLDER='data/split/'
-TRAIN_NAME='fold_train.csv'
-TARGET_NAME='fold_target.csv'
+TRAIN_NAME='fold_train_outlier.csv'
+TARGET_NAME='fold_target_outlier.csv'
 TARGET_COLUMN='SalePrice'
 
-python run.py 'split' \
+kaggleflow 'split' \
   --dataset-path=$DATASET_PATH \
   --num-folds=$NUM_FOLDS \
   --save-folder=$SAVE_FOLDER \

@@ -2,7 +2,7 @@ from sklearn.linear_model import Lasso
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import RobustScaler
 
-from manager.base_model import Model
+from kaggleflow.manager.base_model import Model
 
 
 class LassoModel(Model):

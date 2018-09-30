@@ -1,5 +1,6 @@
 from sklearn.linear_model import LinearRegression as LR
-from manager.base_model import Model
+
+from kaggleflow.manager.base_model import Model
 
 
 class LinearRegression(Model):

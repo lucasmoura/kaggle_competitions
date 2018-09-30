@@ -1,5 +1,6 @@
 from sklearn.ensemble import RandomForestRegressor
-from manager.base_model import Model
+
+from kaggleflow.manager.base_model import Model
 
 
 class RandomForest(Model):
